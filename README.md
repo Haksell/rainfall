@@ -2,7 +2,7 @@
 
 Port forwarding and shit
 
-```shell
+```
 $ ssh level0@127.0.0.1 -p 25424
           _____       _       ______    _ _ 
          |  __ \     (_)     |  ____|  | | |
@@ -24,4 +24,25 @@ level0@127.0.0.1's password:
  System-wide ASLR (kernel.randomize_va_space): Off (Setting: 0)
 RELRO           STACK CANARY      NX            PIE             RPATH      RUNPATH      FILE
 No RELRO        No canary found   NX enabled    No PIE          No RPATH   No RUNPATH   /home/user/level0/level0
+```
+
+## level0
+
+```
+$ getfacl level0
+# file: level0
+# owner: level1
+# group: users
+# flags: s--
+user::rwx
+user:level0:r-x
+user:level1:r-x
+group::---
+mask::r-x
+other::---
+```
+
+```
+$ cat /etc/passwd | grep level1
+level1:x:2030:2030::/home/user/level1:/bin/bash
 ```
