@@ -30,6 +30,8 @@ Dump of assembler code for function main:
    0x0804854b <+12>:	ret    
 End of assembler dump.
 ```
+
+```
 Dump of assembler code for function p:
    0x080484d4 <+0>:	push   ebp
    0x080484d5 <+1>:	mov    ebp,esp
