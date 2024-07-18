@@ -3,7 +3,7 @@
 Port forwarding and shit
 
 ```
-$ ssh level0@127.0.0.1 -p 25424
+$ ssh -p 24242 level5@localhost
           _____       _       ______    _ _ 
          |  __ \     (_)     |  ____|  | | |
          | |__) |__ _ _ _ __ | |__ __ _| | |
@@ -52,7 +52,7 @@ mask::r-x
 other::---
 ```
 Since the setUID bit is set, the level0 is run with the privilege of level1. 
-So looking at the dissasembled code we see that we need to run ./level 423 to escape the condition that prints "No !"
+So looking at the disassembled code we see that we need to run ./level 423 to escape the condition that prints "No !"
 Therefore the program runs a shell with level1 right, so we cd into level1 and
 ```
 cat .pass
@@ -409,4 +409,9 @@ level5@RainFall:~$ objdump -t level5
 08049854 g     O .bss   00000004              m
 ```
 
-target : 134513828
+```shell
+(gdb) p o
+$2 = {<text variable, no debug info>} 0x80484a4 (= 134513828) <o>
+```
+
+for i in {1..35}; do echo "AAAA." "%$i\$x" | ./level5; done
