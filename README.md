@@ -26,6 +26,14 @@ RELRO           STACK CANARY      NX            PIE             RPATH      RUNPA
 No RELRO        No canary found   NX enabled    No PIE          No RPATH   No RUNPATH   /home/user/level0/level0
 ```
 
+## tools
+
+- `file <executable>`
+- `checksec --file <executable>`
+- `ldd <executable>`
+- `readelf -a <executable>`
+- `objdump -d <executable>`
+
 ## for gdb
 
 ```
