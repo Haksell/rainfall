@@ -1,0 +1,5 @@
+# level0 expect an argument of 423
+$ ./level0 423
+
+# It gives us a reverse shell
+$$ cat /home/user/level1/.pass

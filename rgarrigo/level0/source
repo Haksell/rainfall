@@ -1,0 +1,26 @@
+#define _GNU_SOURCE
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+int main(int argc, char *argv[])
+{
+    char    *args[2];
+    int     egid;
+    int     euid;
+
+    (void) argc;
+    if (atoi(argv[1]) != 0x1a7)
+    {
+        write(1, "No !\n", 5);
+        return (0);
+    }
+    args[0] = strdup("/bin/sh");
+    args[1] = 0;
+    egid = getegid();
+    euid = geteuid();
+    setresgid(egid, egid, egid);
+    setresuid(euid, euid, euid);
+    execv("/bin/sh", args);
+    return (0);
+}
