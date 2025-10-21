@@ -1,4 +1,4 @@
-# level0 expect an argument of 423
+# level0 expect 423 as first argument
 $ ./level0 423
 
 # It gives us a reverse shell
