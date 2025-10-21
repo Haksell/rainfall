@@ -14,5 +14,5 @@ scp -P ${PORT} "${LEVEL_NAME}@${HOST}:~/*" ${FILES_DIR}/
 scp -P ${PORT} "${LEVEL_NAME}@${HOST}:~/.*" ${FILES_DIR}/
 
 for file in $(find ${FILES_DIR} -type f); do
-    chmod 440 ${file}
+    chmod -w ${file}
 done
