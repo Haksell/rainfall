@@ -1,0 +1,25 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+char    *p(void)
+{
+    int     n;
+    char    buffer[64];
+
+    fflush(stdin);
+    gets(buffer);
+    n = *(int *)(buffer + 112) & 0xb0000000;
+    if (n != 0xb0000000)
+    {
+        printf("(%p)\n", buffer);
+        exit(1);
+    }
+    puts(buffer);
+    return (strdup(buffer));
+}
+
+int main(void)
+{
+    return (p());
+}
