@@ -9,7 +9,7 @@ if [ ${LEVEL_NAME##level} != ${LEVEL_NAME} ]; then
     PREVIOUS_LEVEL_NAME=level${PREVIOUS_LEVEL_ID}
 else
     LEVEL_ID=${LEVEL_NAME##bonus}
-    if [ ${LEVEL_ID} == 0 ]; then
+    if [ ${LEVEL_ID} -eq 0 ]; then
         PREVIOUS_LEVEL_NAME=level9
     else
         PREVIOUS_LEVEL_ID=$(echo "${LEVEL_ID} - 1" | bc)
