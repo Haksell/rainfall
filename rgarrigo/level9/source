@@ -1,0 +1,51 @@
+#include <string.h>
+
+class N
+{
+public:
+    N(int x);
+
+    int     add(N *other);
+    char    *setAnnotation(char *annotation);
+
+    int     operator::+(N &other);
+    int     operator::-(N &other);
+
+private:
+    char    annotation[100];
+    int     val;
+}   t_dummy;
+
+// _ZN1NC1Ei
+N::N(int x)
+{
+    this->val = x;
+}
+
+// _ZN1NplERS_
+int N::operator::+(N &other)
+{
+    return (this->val + other->val);
+}
+
+// _ZN1NmiERS_
+int N::operator::-(N &other)
+{
+    return (this->val - other->val);
+}
+
+// _ZN1N13setAnnotationEPc
+char    *N::setAnnotation(char *y)
+{
+    return (memcpy(this->annotation, y, strlen(y)));
+}
+
+int main(int argc, char *argv[])
+{
+    if (argc <= 1)
+        exit(1);
+    N   *n1 = new N(5);
+    N   *n2 = new N(6);
+    n1->setAnnotation(argv[1]);
+    return (*n1 + *n2);
+}
