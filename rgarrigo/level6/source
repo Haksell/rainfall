@@ -1,0 +1,26 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef int (*t_f)(void);
+
+int n(void)
+{
+    return (system("/bin/cat /home/user/level7/.pass"));
+}
+
+int m(void)
+{
+    return (puts("Nope"));
+}
+
+int main(void)
+{
+    t_f     *f;
+    char    *buffer;
+
+    buffer = malloc(64);
+    f = malloc(sizeof(t_f));
+    *f = &m;
+    strcpy(buffer, argv[1]);
+    return ((*f)());
+}
