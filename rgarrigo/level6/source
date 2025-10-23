@@ -14,11 +14,12 @@ int m(void)
     return (puts("Nope"));
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
     t_f     *f;
     char    *buffer;
 
+    (void) argc;
     buffer = malloc(64);
     f = malloc(sizeof(t_f));
     *f = &m;
