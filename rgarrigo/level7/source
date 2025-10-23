@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
     t_arg *arg1;
     t_arg *arg2;
 
+    (void) argc;
     arg1 = malloc(sizeof(t_arg));
     arg1.n = 1;
     arg1.str = malloc(8);
