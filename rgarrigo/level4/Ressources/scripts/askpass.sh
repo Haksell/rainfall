@@ -13,7 +13,7 @@ else
         PREVIOUS_LEVEL_NAME=level9
     else
         PREVIOUS_LEVEL_ID=$(echo "${LEVEL_ID} - 1" | bc)
-        PREVIOUS_LEVEL_NAME=bonus${LEVEL_ID}
+        PREVIOUS_LEVEL_NAME=bonus${PREVIOUS_LEVEL_ID}
     fi
 fi
 FLAG_FILE=${PWD}/../../../${PREVIOUS_LEVEL_NAME}/flag
