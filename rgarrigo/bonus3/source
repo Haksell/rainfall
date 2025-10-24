@@ -1,0 +1,32 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct s_data
+{
+    char    flag[66];
+    char    dummy[66];
+}   t_data;
+
+int main(int argc, char *argv[])
+{
+    FILE    *flag_file;
+    t_data  data;
+
+    flag_file = fopen("/home/user/end/.pass", "r");
+    data = (t_data){0};
+    if (flag_file == NULL || argc != 2)
+        return (-1);
+    fread(data.flag, 1, 66, flag_file);
+    data.flag[65] = 0;
+    data.flag[atoi(argv[1])] = 0;
+    fread(data.dummy, 1, 65, flag_file);
+    fclose(flag_file);
+    if (strcmp(data.flag, argv[1]) == 0)
+    {
+        execl("/bin/sh", "sh", 0);
+        return (0);
+    }
+    puts(data.dummy);
+    return (0);
+}

