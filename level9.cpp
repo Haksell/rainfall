@@ -24,8 +24,5 @@ int main(int argc, char** argv) {
     N* b = new N(6);
 
     a->setAnnotation(argv[1]);
-
     b->operator+(*a);
-
-    return 0;
 }
