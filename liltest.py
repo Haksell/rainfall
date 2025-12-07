@@ -1,6 +1,6 @@
 # return_addr = 0x0804853e
-return_addr = 0xb7e6b060
-mask = 0xb0000000
+return_addr = 0xB7E6B060
+mask = 0xB0000000
 
 result = return_addr & mask
 

