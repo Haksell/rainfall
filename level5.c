@@ -2,17 +2,17 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-void o(void) {
+void shell() {
     system("/bin/sh");
     _exit(1);
 }
 
-void n(void) {
-    char s[520];
+void cat() {
+    char buf[520];
 
-    fgets(s, 512, stdin);
-    printf(s);
+    fgets(buf, 512, stdin);
+    printf(buf);
     exit(1);
 }
 
-int main(void) { n(); }
+int main() { cat(); }
