@@ -744,9 +744,9 @@ Dump of assembler code for function main:
    0x0804864b <+87>:    call   0x80486f6 <_ZN1NC2Ei>
    0x08048650 <+92>:    mov    DWORD PTR [esp+0x18],ebx
    0x08048654 <+96>:    mov    eax,DWORD PTR [esp+0x1c]
-   0x08048658 <+100>:   mov    DWORD PTR [esp+0x14],eax    esp+0x14 = a
+   0x08048658 <+100>:   mov    DWORD PTR [esp+0x14],eax
    0x0804865c <+104>:   mov    eax,DWORD PTR [esp+0x18]
-   0x08048660 <+108>:   mov    DWORD PTR [esp+0x10],eax    esp+0x10 = b
+   0x08048660 <+108>:   mov    DWORD PTR [esp+0x10],eax
    0x08048664 <+112>:   mov    eax,DWORD PTR [ebp+0xc]
    0x08048667 <+115>:   add    eax,0x4
    0x0804866a <+118>:   mov    eax,DWORD PTR [eax]
@@ -792,3 +792,6 @@ N::operator+ = 0x0804873a
 $ cat /home/user/bonus0/.pass
 f3f0004b6f364cb5a4147e9ef827fa922a4861408845c26b6971ad770d906728
 ```
+
+## bonus0
+
