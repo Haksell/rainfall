@@ -18,8 +18,10 @@ char* pp(char* dest) {
     p(s1, " - ");
     p(s2, " - ");
     strcpy(dest, s1);
-    dest[strlen(dest)] = ' ';
-    dest[strlen(dest) + 1] = '\0';
+
+    size_t len = strlen(dest);
+    dest[len] = ' ';
+    dest[len + 1] = '\0';
     return strcat(dest, s2);
 }
 
