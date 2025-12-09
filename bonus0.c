@@ -3,7 +3,7 @@
 #include <unistd.h>
 
 char* p(char* dest, char* s) {
-    char buf[4104];
+    char buf[4096];
 
     puts(s);
     read(STDIN_FILENO, buf, 4096);

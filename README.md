@@ -795,8 +795,6 @@ f3f0004b6f364cb5a4147e9ef827fa922a4861408845c26b6971ad770d906728
 
 ## bonus0
 
-AAAA0BBBB0
-
 ```console
 (gdb) disas pp
 Dump of assembler code for function pp:
@@ -843,4 +841,16 @@ Dump of assembler code for function pp:
    0x080485a2 <+132>:   pop    ebp
    0x080485a3 <+133>:   ret    
 End of assembler dump.
+```
+
+We can do 20 then 19.
+
+```console
+bonus0@RainFall:~$ ./bonus0 
+ - 
+abcdefghijklmnopqrst
+ - 
+abcdefghijklmnopqrs 
+abcdefghijklmnopqrstabcdefghijklmnopqrs abcdefghijklmnopqrs
+Segmentation fault (core dumped)
 ```
