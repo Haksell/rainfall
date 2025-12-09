@@ -1,4 +1,5 @@
 #!/bin/bash
+# RainFall.iso and this script have to be in the same folder
 
 PWD=$(dirname $(readlink -f $0))
 
