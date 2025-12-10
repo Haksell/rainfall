@@ -284,7 +284,7 @@ The address of our shellcode will be 0x804a008, a value on the heap, which avoid
 [ebp+0x04]                → real return address
 ```
 
-The script [level2.py](./resources/level2.py) prints the full exploit.
+The script [level2.py](./level2/resources/level2.py) prints the full exploit.
 
 ```console
 level2@RainFall:~$ (python /tmp/level2.py ; cat) | ./level2
