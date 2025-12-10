@@ -1,5 +1,5 @@
 # level0 expect 423 as first argument
-$ ./level0 423
+/home/user/level0/level0 423
 
 # It gives us a reverse shell
 # $> cat /home/user/level1/.pass

