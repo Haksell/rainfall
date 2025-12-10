@@ -888,6 +888,6 @@ $ cat /home/user/bonus2/.pass
 
 ## bonus2
 
-TODO
+71d449df0f960b36e0055eb58c14d0f5d0ddc0b35328d657f91cf0df15910587
 
 ## bonus3
