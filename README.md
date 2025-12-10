@@ -8,6 +8,12 @@ finish bonus3
 readme
 understand bonus0
 
+## Hard
+
+level5
+level9
+bonus0
+
 ## Infos
 
 Port forwarding and shit
