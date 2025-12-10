@@ -2,4 +2,4 @@
 $ ./level0 423
 
 # It gives us a reverse shell
-$$ cat /home/user/level1/.pass
+# $> cat /home/user/level1/.pass

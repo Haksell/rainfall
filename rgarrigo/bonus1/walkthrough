@@ -23,4 +23,4 @@ BUFFER_INPUT="$(put 11 "${N}")"
 ./bonus1 "${N_INPUT}" "${BUFFER_INPUT}"
 
 # We use the reverse shell to retrieve the password
-$ cat /home/user/bonus2/.pass
+# $> cat /home/user/bonus2/.pass

@@ -11,4 +11,4 @@ $ serviceAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 $ login
 
 # We use the reverse shell to retrieve the password
-$$ cat /home/user/level9/.pass
+# $> cat /home/user/level9/.pass

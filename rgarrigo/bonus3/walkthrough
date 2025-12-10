@@ -6,4 +6,4 @@
 ./bonus3 ""
 
 # We use the reverse shell to retrieve the password
-$ cat /home/user/end/.pass
+# $> cat /home/user/end/.pass
