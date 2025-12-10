@@ -41,7 +41,7 @@ level3@RainFall:~$ echo '%x %x %x %x %x' | ./level3
 200 b7fd1ac0 b7ff37d0 25207825 78252078
 ```
 
-There are 3 values, then 257820 repeating corresponding to `%x `. So it is found at the 4th position.
+There are 3 values, then `257820` repeating corresponding to `%x `. So it is found at the 4th position.
 
 The trick is to start the format string with the address we want to overwrite, then set %n the 4th format specifier. The rest are padding characters to reach a value of 64.
 
