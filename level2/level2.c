@@ -11,9 +11,11 @@ void p() {
     fflush(stdout);
     gets(buf);
 
+    // NOLINTNEXTLINE
     ret_addr = (unsigned int)__builtin_return_address(0);
 
     if ((ret_addr & 0xb0000000) == 0xb0000000) {
+        // NOLINTNEXTLINE
         printf("(%p)\n", (const void*)ret_addr);
         _exit(1);
     }
