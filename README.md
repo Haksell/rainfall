@@ -299,7 +299,7 @@ cat /home/user/level3/.pass
 ## level3
 
 ```nasm
-(gdb) disass v
+(gdb) disas v
 Dump of assembler code for function v:
    0x080484a4 <+0>:     push   ebp
    0x080484a5 <+1>:     mov    ebp,esp
