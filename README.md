@@ -2,7 +2,6 @@
 
 ## TODO
 
-finish bonus3
 readme
 finish bonus0
 finish bonus2
@@ -12,6 +11,7 @@ finish bonus2
 level5
 level9
 bonus0
+bonus2
 
 ## Infos
 
