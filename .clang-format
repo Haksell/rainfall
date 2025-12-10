@@ -42,7 +42,7 @@ IncludeBlocks: Merge
 IncludeCategories:
   - Regex: '^<.*\.h>'
     Priority: 1
-  - Regex: '.*'
+  - Regex: ".*"
     Priority: 2
 IndentCaseLabels: false
 IndentWidth: 4
