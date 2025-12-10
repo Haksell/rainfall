@@ -34,7 +34,7 @@ A shellcode exploit has this structure:
 
 This level makes it a bit harder by checking if the address is in the range `0xb0000000` -> `0xffffffff`, which contains the stack. Luckily the buffer is duplicated on the heap with `strdup` right after.
 
-```console
+```
 (gdb) set disassembly-flavor intel
 (gdb) set pagination off
 (gdb) disas main
