@@ -1,5 +1,15 @@
 # Rainfall
 
+## TODO
+
+finish bonus1
+finish bonus2
+finish bonus3
+readme
+understand bonus0
+
+## Infos
+
 Port forwarding and shit
 
 ```
@@ -854,3 +864,9 @@ abcdefghijklmnopqrs
 abcdefghijklmnopqrstabcdefghijklmnopqrs abcdefghijklmnopqrs
 Segmentation fault (core dumped)
 ```
+
+TODO clean
+
+cd1f77a585965341c37a1774a1d1686326e1fc53aaa5459c840409d4d06523c9
+
+## bonus1
