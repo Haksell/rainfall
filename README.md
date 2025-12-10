@@ -2,11 +2,10 @@
 
 ## TODO
 
-finish bonus1
-finish bonus2
 finish bonus3
 readme
-understand bonus0
+finish bonus0
+finish bonus2
 
 ## Hard
 
@@ -888,3 +887,7 @@ $ cat /home/user/bonus2/.pass
 ```
 
 ## bonus2
+
+TODO
+
+## bonus3
