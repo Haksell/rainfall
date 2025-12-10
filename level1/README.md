@@ -35,6 +35,20 @@ There is another function called `run` that opens a shell with the permissions o
 $1 = {<text variable, no debug info>} 0x8048444 <run>
 ```
 
+Decompiled with Ghidra, the full program looks like this:
+
+```c
+void run() {
+    fwrite("Good... Wait what?\n", 1, 19, stdout);
+    system("/bin/sh");
+}
+
+int main() {
+    char buf[64];
+    gets(buf);
+}
+```
+
 Our goal is to overwrite the return address of `main` so that it jumps to `run` insteads of exiting the program.
 
 The layout of the stack before calling `gets` is:

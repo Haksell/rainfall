@@ -105,7 +105,29 @@ End of assembler dump.
 0x80c5348:       "/bin/sh"
 ```
 
-The program checks if `argv[1]` is the correct value (0x1a7 = 423), and executes a shell with elevated privileges.
+Decompiled, this looks like this:
+
+```c
+int main(int argc, char** argv) {
+    if (atoi(argv[1]) == 423) {
+        char* exec_argv[2] = {strdup("/bin/sh"), NULL};
+
+        gid_t egid = getegid();
+        uid_t euid = geteuid();
+
+        setresgid(egid, egid, egid);
+        setresuid(euid, euid, euid);
+
+        execv("/bin/sh", exec_argv);
+    } else {
+        fwrite("No !\n", 1, 5, stdout);
+    }
+
+    return 0;
+}
+```
+
+The program checks if `argv[1]` has the correct value (0x1a7 = 423), and executes a shell with elevated privileges.
 
 ```console
 level0@RainFall:~$ ./level0 777
@@ -151,6 +173,20 @@ There is another function called `run` that opens a shell with the permissions o
 ```
 (gdb) p run
 $1 = {<text variable, no debug info>} 0x8048444 <run>
+```
+
+Decompiled with Ghidra, the full program looks like this:
+
+```c
+void run() {
+    fwrite("Good... Wait what?\n", 1, 19, stdout);
+    system("/bin/sh");
+}
+
+int main() {
+    char buf[64];
+    gets(buf);
+}
 ```
 
 Our goal is to overwrite the return address of `main` so that it jumps to `run` insteads of exiting the program.
