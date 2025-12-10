@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # We have to write non-zero value at 'a[32]' and input 'login' to get a reverse shell
 /home/user/level8/level8
 

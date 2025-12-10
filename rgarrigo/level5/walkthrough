@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Helper function, "put n s" print the string 's' n times
 put() { printf "$2%.0s" $(seq 1 "$1"); }
 

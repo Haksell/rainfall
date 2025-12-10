@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Helper function, "hex 41424344" gives "ABCD"
 hex() { echo "$1" | xxd -p -r; }
 

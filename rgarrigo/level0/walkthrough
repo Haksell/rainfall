@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # level0 expect 423 as first argument
 /home/user/level0/level0 423
 
