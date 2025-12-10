@@ -50,7 +50,7 @@ void v() {
 int main() { v(); }
 ```
 
-We have to write 64 at the address 0x0804988c to get the reverse shell.
+We have to write 64 at the address 0x0804988c to get the shell.
 
 The program uses `printf` with the input directly as a format string. This is a well-known vulnerability, since users can write their own format specifiers, causing the leak of information, or in our case, writing values directly to memory.
 
