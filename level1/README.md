@@ -30,12 +30,12 @@ BUGS
 
 There is another function called `run` that opens a shell with the permissions of the next level.
 
-```console
+```
 (gdb) p run
 $1 = {<text variable, no debug info>} 0x8048444 <run>
 ```
 
-Our goal is going to be to overwrite the return address of `main` so that it jumps to `run` insteads of exiting the program.
+Our goal is to overwrite the return address of `main` so that it jumps to `run` insteads of exiting the program.
 
 The layout of the stack before calling `gets` is:
 - return address (4 bytes)
