@@ -3,7 +3,7 @@
 This is a very short program that seems to only call `gets`.
 
 ```nasm
-(gdb)
+(gdb) disas main
 Dump of assembler code for function main:
    0x08048480 <+0>:     push   ebp
    0x08048481 <+1>:     mov    ebp,esp

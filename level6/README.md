@@ -2,6 +2,8 @@
 
 Heap overflow
 
+TODO: try with objdump -R
+
 ```console
 $ objdump -t level6 | grep n
 08048454 g     F .text  00000014              n

@@ -1,0 +1,1 @@
+`(echo -e "set disassembly-flavor intel\nset pagination off\ndisas main"; cat) | gdb`
