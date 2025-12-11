@@ -56,8 +56,8 @@ level5@RainFall:~$ python -c 'print("%x " * 10)' | ./level5
 ```
 
 To recapitulate:
-- o = 0x80484a4 = 134513828 = (2052 << 16) | 33956
-- exit@got = 08049838
+- o = 0x080484a4 = 134513828 = (2052 << 16) | 33956
+- exit@got = 0x08049838
 - the format string is at the 4th place on the stack
 
 We can then create a complete payload, similarly to the previous level, but with the added trick of using `%hn` to split the number of characters to write (~134 million) in two much smaller values.
