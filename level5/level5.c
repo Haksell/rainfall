@@ -2,12 +2,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-void shell() {
+void o() {
     system("/bin/sh");
     _exit(1);
 }
 
-void cat() {
+void n() {
     char buf[520];
 
     fgets(buf, 512, stdin);
@@ -15,4 +15,4 @@ void cat() {
     exit(1);
 }
 
-int main() { cat(); }
+int main() { n(); }
