@@ -3,7 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 
-int main(int argc, const char** argv, const char** envp) {
+int main(int argc, const char** argv) {
     char buf[132];
     FILE* file = fopen("/home/user/end/.pass", "r");
     memset(buf, 0, sizeof(buf));

