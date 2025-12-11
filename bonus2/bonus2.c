@@ -1,0 +1,40 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int lang;
+
+typedef struct s_user {
+    char firstname[40];
+    char surname[32];
+} t_user;
+
+void greetuser(t_user user) {
+    char msg[64];
+
+    switch (lang) {
+    case 1: strcpy(msg, "Hyvää päivää "); break;
+    case 2: strcpy(msg, "Goedemiddag! "); break;
+    case 0: strcpy(msg, "Hello "); break;
+    }
+    strcat(msg, user.firstname);
+    puts(msg);
+}
+
+int main(int argc, char* argv[]) {
+    char* env_lang;
+    t_user user;
+
+    if (argc != 3) return 1;
+    memset(&user, 0, sizeof(t_user));
+    strncpy(user.firstname, argv[1], 40);
+    strncpy(user.surname, argv[2], 32);
+    env_lang = getenv("LANG");
+    if (env_lang) {
+        if (memcmp(env_lang, "fi", 2) == 0)
+            lang = 1;
+        else if (memcmp(env_lang, "nl", 2) == 0)
+            lang = 2;
+    }
+    greetuser(user);
+}
