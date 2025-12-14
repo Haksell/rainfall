@@ -2,7 +2,7 @@
 
 After port forwarding the port 4242 to 24242 on the host, we login to the VM and get greeted by this screen:
 
-```
+```console
 $ ssh -p 24242 level0@localhost
           _____       _       ______    _ _ 
          |  __ \     (_)     |  ____|  | | |
