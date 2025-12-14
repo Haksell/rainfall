@@ -3,7 +3,7 @@
 After port forwarding the port 4242 to 24242 on the host, we login to the VM and get greeted by this screen:
 
 ```
-ssh -p 24242 level0@localhost
+$ ssh -p 24242 level0@localhost
           _____       _       ______    _ _ 
          |  __ \     (_)     |  ____|  | | |
          | |__) |__ _ _ _ __ | |__ __ _| | |
@@ -23,7 +23,7 @@ level0@localhost's password:
   Kernel Heap Hardening: No KERNHEAP
  System-wide ASLR (kernel.randomize_va_space): Off (Setting: 0)
 RELRO           STACK CANARY      NX            PIE             RPATH      RUNPATH      FILE
-No RELRO        No canary found   NX enabled    No PIE          No RPATH   No RUNPATH   /home/user/level0/level
+No RELRO        No canary found   NX enabled    No PIE          No RPATH   No RUNPATH   /home/user/level0/level0
 ```
 
 For the most part, it means that exploitation will be as easy as possible:
